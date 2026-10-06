@@ -14,7 +14,7 @@ const mockDork: Dork = {
 
 describe('DorkCard', () => {
   it('renders dork information', () => {
-    render(<DorkCard dork={mockDork} />)
+    render(<DorkCard dork={mockDork} index={0} />)
 
     expect(screen.getByText('site:')).toBeTruthy()
     expect(screen.getByText('Restringe la búsqueda a un dominio.')).toBeTruthy()
@@ -23,13 +23,13 @@ describe('DorkCard', () => {
   })
 
   it('has a copy button', () => {
-    render(<DorkCard dork={mockDork} />)
+    render(<DorkCard dork={mockDork} index={0} />)
     expect(screen.getByRole('button', { name: /copiar/i })).toBeTruthy()
   })
 
   it('has a try button that opens Google', () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
-    render(<DorkCard dork={mockDork} />)
+    render(<DorkCard dork={mockDork} index={0} />)
 
     const tryButton = screen.getByRole('button', { name: /probar en google/i })
     fireEvent.click(tryButton)
@@ -37,6 +37,7 @@ describe('DorkCard', () => {
     expect(openSpy).toHaveBeenCalledWith(
       'https://www.google.com/search?q=site%3Aexample.com',
       '_blank',
+      'noopener,noreferrer',
     )
     openSpy.mockRestore()
   })

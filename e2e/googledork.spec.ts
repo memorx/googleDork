@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 test.describe('GoogleDork app', () => {
   test('loads and displays dorks', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'GoogleDork' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /GoogleDork/i })).toBeVisible()
     await expect(page.getByTestId('dork-card').first()).toBeVisible()
   })
 
@@ -12,8 +12,7 @@ test.describe('GoogleDork app', () => {
     const searchInput = page.getByLabel('Buscar dorks')
     await searchInput.fill('site:')
     await expect(page.getByTestId('dork-card').first()).toBeVisible()
-    const countText = await page.locator('header >> text=/de \\d+ dorks/').textContent()
-    expect(countText).not.toContain(`de ${0} dorks`)
+    await expect(page.getByText(/Mostrando/)).toBeVisible()
   })
 
   test('category filter works', async ({ page }) => {
@@ -35,9 +34,16 @@ test.describe('GoogleDork app', () => {
     await page.goto('/')
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.getByRole('button', { name: /Probar en Google/i }).first().click(),
+      page.getByRole('button', { name: /Probar/i }).first().click(),
     ])
     await expect(newPage).toHaveURL(/google\.com/)
     await newPage.close()
+  })
+
+  test('theme toggle works', async ({ page }) => {
+    await page.goto('/')
+    const toggle = page.getByRole('button', { name: /modo/i })
+    await toggle.click()
+    await expect(page.locator('html[data-theme="dark"]')).toBeAttached()
   })
 })

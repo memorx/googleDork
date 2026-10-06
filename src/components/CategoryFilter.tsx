@@ -7,33 +7,36 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ selectedCategory, onSelectCategory, counts }: CategoryFilterProps) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0)
+
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoría">
-      <button
-        onClick={() => onSelectCategory(null)}
-        className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-          selectedCategory === null
-            ? 'bg-indigo-600 text-white'
-            : 'bg-white text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
-        }`}
-        aria-pressed={selectedCategory === null}
-      >
-        Todas ({Object.values(counts).reduce((a, b) => a + b, 0)})
-      </button>
-      {categories.map((category) => (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm font-medium text-[var(--text-secondary)]">Filtrar por categoría</p>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoría">
         <button
-          key={category.id}
-          onClick={() => onSelectCategory(category.id)}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-            selectedCategory === category.id
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
-          }`}
-          aria-pressed={selectedCategory === category.id}
+          onClick={() => onSelectCategory(null)}
+          className={`category-pill ${selectedCategory === null ? 'active' : ''}`}
+          aria-pressed={selectedCategory === null}
         >
-          {category.name} ({counts[category.id] || 0})
+          Todas
+          <span className="rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
+            {total}
+          </span>
         </button>
-      ))}
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => onSelectCategory(category.id)}
+            className={`category-pill ${selectedCategory === category.id ? 'active' : ''}`}
+            aria-pressed={selectedCategory === category.id}
+          >
+            {category.name}
+            <span className="rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
+              {counts[category.id] || 0}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

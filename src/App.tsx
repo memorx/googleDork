@@ -2,7 +2,10 @@ import { useMemo, useState } from 'react'
 import { categories, dorks, searchDorks } from './data/dorks'
 import { CategoryFilter } from './components/CategoryFilter'
 import { DorkCard } from './components/DorkCard'
+import { EmptyState } from './components/EmptyState'
+import { Header } from './components/Header'
 import { SearchBar } from './components/SearchBar'
+import { Stats } from './components/Stats'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -22,61 +25,94 @@ function App() {
     return searchDorks(searchQuery, selectedCategory || undefined)
   }, [searchQuery, selectedCategory])
 
+  const handleClearFilters = () => {
+    setSearchQuery('')
+    setSelectedCategory(null)
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">
-                GoogleDork
-              </h1>
-              <p className="mt-1 text-slate-600 dark:text-slate-300">
-                Panel para explorar, buscar y probar Google Dorks organizados por categoría.
+    <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
+      <Header />
+
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-[var(--bg-primary)] pb-12 pt-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
+
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight text-[var(--text-primary)] sm:text-4xl lg:text-5xl">
+                Explorá el poder de las{' '}
+                <span className="gradient-text">búsquedas avanzadas</span>
+              </h2>
+              <p className="mx-auto max-w-2xl text-lg text-[var(--text-secondary)]">
+                Colección completa de Google Dorks organizados por categoría. Buscá, filtrá,
+                copiá y probá cada operador directamente.
               </p>
             </div>
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              {filteredDorks.length} de {dorks.length} dorks
+
+            <div className="mx-auto mt-8 max-w-3xl">
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
             </div>
           </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="mb-6">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </section>
 
-        <section className="mb-8">
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            counts={counts}
-          />
-        </section>
-
-        {filteredDorks.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-800">
-            <p className="text-lg text-slate-600 dark:text-slate-300">No se encontraron dorks.</p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Probá con otra búsqueda o categoría.
-            </p>
+        {/* Content */}
+        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <Stats filteredCount={filteredDorks.length} />
           </div>
-        ) : (
-          <section
-            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-            aria-label="Listado de Google Dorks"
-          >
-            {filteredDorks.map((dork) => (
-              <DorkCard key={dork.id} dork={dork} />
-            ))}
-          </section>
-        )}
+
+          <div className="mb-8">
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+              counts={counts}
+            />
+          </div>
+
+          {filteredDorks.length === 0 ? (
+            <EmptyState onClear={handleClearFilters} />
+          ) : (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Mostrando <span className="font-semibold text-[var(--text-primary)]">{filteredDorks.length}</span>{' '}
+                  {filteredDorks.length === 1 ? 'dork' : 'dorks'}
+                </p>
+                {(searchQuery || selectedCategory) && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="text-sm font-medium text-[var(--accent-600)] hover:text-[var(--accent-700)]"
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+              </div>
+
+              <section
+                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                aria-label="Listado de Google Dorks"
+              >
+                {filteredDorks.map((dork, index) => (
+                  <DorkCard key={dork.id} dork={dork} index={index} />
+                ))}
+              </section>
+            </>
+          )}
+        </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-6 dark:border-slate-700 dark:bg-slate-900">
-        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-slate-500 dark:text-slate-400 sm:px-6 lg:px-8">
-          Usá estos dorks solo en sistemas que te pertenezcan o con autorización explícita.
+      <footer className="border-t border-[var(--border-color)] bg-[var(--bg-primary)] py-8">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <p className="mb-2 text-sm text-[var(--text-secondary)]">
+            GoogleDork — Herramienta educativa para seguridad informática.
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            Usá estos dorks únicamente en sistemas propios o con autorización explícita.
+          </p>
         </div>
       </footer>
     </div>

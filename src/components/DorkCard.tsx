@@ -3,9 +3,10 @@ import type { Dork } from '../data/dorks'
 
 interface DorkCardProps {
   dork: Dork
+  index: number
 }
 
-export function DorkCard({ dork }: DorkCardProps) {
+export function DorkCard({ dork, index }: DorkCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -14,7 +15,6 @@ export function DorkCard({ dork }: DorkCardProps) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback for environments without clipboard API
       const textArea = document.createElement('textarea')
       textArea.value = dork.example
       document.body.appendChild(textArea)
@@ -27,38 +27,68 @@ export function DorkCard({ dork }: DorkCardProps) {
   }
 
   const handleTry = () => {
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(dork.example)}`, '_blank')
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(dork.example)}`, '_blank', 'noopener,noreferrer')
   }
 
   return (
     <article
-      className="flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+      className="dork-card gradient-border animate-fade-in flex flex-col"
+      style={{ animationDelay: `${Math.min(index * 50, 500)}ms` }}
       data-testid="dork-card"
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <h3 className="break-all font-mono text-lg font-semibold text-indigo-600 dark:text-indigo-400">
-          {dork.operator}
-        </h3>
-        <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          {dork.id}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-50)] text-[var(--accent-600)]">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </span>
+          <h3 className="break-all font-mono text-lg font-semibold text-[var(--text-primary)]">
+            {dork.operator}
+          </h3>
+        </div>
+        <span className="shrink-0 rounded-md bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-medium text-[var(--text-tertiary)]">
+          #{dork.id}
         </span>
       </div>
 
-      <p className="mb-4 text-slate-700 dark:text-slate-200">{dork.description}</p>
+      <p className="mb-4 flex-grow text-[var(--text-secondary)]">{dork.description}</p>
 
-      <div className="mb-4 rounded-lg bg-slate-50 p-3 dark:bg-slate-900">
-        <p className="mb-1 text-xs font-medium uppercase text-slate-500 dark:text-slate-400">Ejemplo</p>
-        <code className="block break-all font-mono text-sm text-slate-800 dark:text-slate-200">
+      <div className="mb-4">
+        <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+          Ejemplo
+        </p>
+        <div className="dork-code group cursor-pointer" onClick={handleCopy} role="button" tabIndex={0}>
           {dork.example}
-        </code>
+          <span className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+            <svg className="h-4 w-4 text-[var(--accent-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+          </span>
+        </div>
       </div>
 
-      <p className="mb-5 text-sm text-slate-600 dark:text-slate-300">{dork.usage}</p>
+      <div className="mb-5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+          Para qué sirve
+        </p>
+        <p className="text-sm text-[var(--text-secondary)]">{dork.usage}</p>
+      </div>
 
       <div className="mt-auto flex flex-wrap gap-2">
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+          className={`btn flex-1 ${copied ? 'btn-secondary' : 'btn-primary'}`}
           aria-label="Copiar ejemplo"
         >
           {copied ? (
@@ -84,7 +114,7 @@ export function DorkCard({ dork }: DorkCardProps) {
         </button>
         <button
           onClick={handleTry}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="btn btn-secondary flex-1"
           aria-label="Probar en Google"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +125,7 @@ export function DorkCard({ dork }: DorkCardProps) {
               d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
             />
           </svg>
-          Probar en Google
+          Probar
         </button>
       </div>
     </article>
