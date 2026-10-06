@@ -1,12 +1,13 @@
-import { categories } from '../data/dorks'
+import type { Category } from '../data/dorks'
 
 interface CategoryFilterProps {
+  categories: Category[]
   selectedCategory: string | null
   onSelectCategory: (categoryId: string | null) => void
   counts: Record<string, number>
 }
 
-export function CategoryFilter({ selectedCategory, onSelectCategory, counts }: CategoryFilterProps) {
+export function CategoryFilter({ categories, selectedCategory, onSelectCategory, counts }: CategoryFilterProps) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
 
   return (

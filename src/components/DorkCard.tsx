@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Dork } from '../data/dorks'
+import { buildSearchUrl, getEngineById } from '../data/dorks'
 
 interface DorkCardProps {
   dork: Dork
@@ -8,6 +9,7 @@ interface DorkCardProps {
 
 export function DorkCard({ dork, index }: DorkCardProps) {
   const [copied, setCopied] = useState(false)
+  const engine = getEngineById(dork.engine)
 
   const handleCopy = async () => {
     try {
@@ -27,7 +29,7 @@ export function DorkCard({ dork, index }: DorkCardProps) {
   }
 
   const handleTry = () => {
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(dork.example)}`, '_blank', 'noopener,noreferrer')
+    window.open(buildSearchUrl(dork.engine, dork.example), '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -52,9 +54,19 @@ export function DorkCard({ dork, index }: DorkCardProps) {
             {dork.operator}
           </h3>
         </div>
-        <span className="shrink-0 rounded-md bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-medium text-[var(--text-tertiary)]">
-          #{dork.id}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className="rounded-md bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-medium text-[var(--text-tertiary)]">
+            #{dork.id}
+          </span>
+          {engine && (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-white"
+              style={{ backgroundColor: engine.color }}
+            >
+              {engine.name}
+            </span>
+          )}
+        </div>
       </div>
 
       <p className="mb-4 flex-grow text-[var(--text-secondary)]">{dork.description}</p>
@@ -115,7 +127,7 @@ export function DorkCard({ dork, index }: DorkCardProps) {
         <button
           onClick={handleTry}
           className="btn btn-secondary flex-1"
-          aria-label="Probar en Google"
+          aria-label={`Probar en ${engine?.name ?? 'el buscador'}`}
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

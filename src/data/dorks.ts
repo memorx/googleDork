@@ -5,88 +5,294 @@ export interface Dork {
   example: string
   usage: string
   category: string
+  engine: string
 }
 
 export interface Category {
   id: string
   name: string
   description: string
+  engineId: string
 }
+
+export interface Engine {
+  id: string
+  name: string
+  description: string
+  color: string
+  urlTemplate: string
+}
+
+export const engines: Engine[] = [
+  {
+    id: 'google',
+    name: 'Google',
+    description: 'El buscador clásico: operadores avanzados para refinar cualquier búsqueda web.',
+    color: '#4285F4',
+    urlTemplate: 'https://www.google.com/search?q={query}',
+  },
+  {
+    id: 'bing',
+    name: 'Bing',
+    description: 'Buscador de Microsoft con operadores propios como ip: y contains:.',
+    color: '#008373',
+    urlTemplate: 'https://www.bing.com/search?q={query}',
+  },
+  {
+    id: 'duckduckgo',
+    name: 'DuckDuckGo',
+    description: 'Buscador orientado a privacidad con sintaxis de operadores básicos.',
+    color: '#DE5833',
+    urlTemplate: 'https://duckduckgo.com/?q={query}',
+  },
+  {
+    id: 'yandex',
+    name: 'Yandex',
+    description: 'Buscador ruso con operadores exclusivos como mime:, lang: y domain:.',
+    color: '#FC3F1D',
+    urlTemplate: 'https://yandex.com/search/?text={query}',
+  },
+  {
+    id: 'shodan',
+    name: 'Shodan',
+    description: 'Motor de búsqueda de dispositivos conectados a Internet (IoT, servidores, ICS).',
+    color: '#E11D48',
+    urlTemplate: 'https://www.shodan.io/search?query={query}',
+  },
+  {
+    id: 'censys',
+    name: 'Censys',
+    description: 'Plataforma de inteligencia sobre hosts, servicios y certificados de Internet.',
+    color: '#0EA5E9',
+    urlTemplate: 'https://search.censys.io/search?resource=hosts&q={query}',
+  },
+  {
+    id: 'github',
+    name: 'GitHub',
+    description: 'Búsqueda de código fuente: ideal para localizar secretos y credenciales filtradas.',
+    color: '#8957E5',
+    urlTemplate: 'https://github.com/search?q={query}&type=code',
+  },
+  {
+    id: 'fofa',
+    name: 'FOFA',
+    description: 'Motor chino de mapeo de activos de red. La consulta viaja codificada en Base64.',
+    color: '#D946EF',
+    urlTemplate: 'https://fofa.info/result?qbase64={query}',
+  },
+  {
+    id: 'zoomeye',
+    name: 'ZoomEye',
+    description: 'Buscador de dispositivos y servicios expuestos, similar a Shodan.',
+    color: '#10B981',
+    urlTemplate: 'https://www.zoomeye.org/searchResult?q={query}',
+  },
+  {
+    id: 'crtsh',
+    name: 'crt.sh',
+    description: 'Búsqueda en registros de Certificate Transparency para descubrir subdominios.',
+    color: '#64748B',
+    urlTemplate: 'https://crt.sh/?q={query}',
+  },
+  {
+    id: 'wayback',
+    name: 'Wayback Machine',
+    description: 'Archivo histórico de la web: snapshots de páginas y archivos eliminados.',
+    color: '#F59E0B',
+    urlTemplate: 'https://web.archive.org/web/*/{query}',
+  },
+]
 
 export const categories: Category[] = [
   {
     id: 'basic',
     name: 'Búsqueda básica',
     description: 'Operadores fundamentales para refinar cualquier búsqueda en Google.',
+    engineId: 'google',
   },
   {
     id: 'site-url',
     name: 'Sitio y URL',
     description: 'Restringe resultados a dominios, URLs o partes específicas de una dirección.',
+    engineId: 'google',
   },
   {
     id: 'title-text',
     name: 'Título y texto',
     description: 'Busca dentro del título de la página o en el cuerpo del contenido.',
+    engineId: 'google',
   },
   {
     id: 'files',
     name: 'Archivos',
     description: 'Encuentra archivos de un tipo específico expuestos en la web.',
+    engineId: 'google',
   },
   {
     id: 'info',
     name: 'Información',
     description: 'Obtén definiciones, información de contacto, caché o páginas relacionadas.',
+    engineId: 'google',
   },
   {
     id: 'local',
     name: 'Local y mapas',
     description: 'Busca negocios, mapas, películas, libros y otros contenidos locales.',
+    engineId: 'google',
   },
   {
     id: 'social',
     name: 'Redes sociales',
     description: 'Filtra contenido de foros, blogs y redes sociales.',
+    engineId: 'google',
   },
   {
     id: 'advanced',
     name: 'Avanzados',
     description: 'Operadores menos conocidos o combinaciones de precisión.',
+    engineId: 'google',
   },
   {
     id: 'security',
     name: 'Seguridad / Google Hacking',
     description: 'Dorks comunes para auditoría de seguridad y pruebas de penetración autorizadas.',
+    engineId: 'google',
   },
   {
     id: 'cameras',
     name: 'Cámaras IP públicas',
     description: 'Dorks para localizar cámaras IP accesibles públicamente.',
+    engineId: 'google',
   },
   {
     id: 'documents',
     name: 'Documentos y ficheros',
     description: 'Búsqueda de documentos y ficheros de oficina comunes.',
+    engineId: 'google',
   },
   {
     id: 'os-servers',
     name: 'Sistemas operativos y servidores',
     description: 'Dorks orientados a servidores, sistemas operativos y paneles de administración.',
+    engineId: 'google',
   },
   {
     id: 'tlds',
     name: 'Buscadores y sitios específicos',
     description: 'Filtra resultados por tipo de dominio o país (TLD).',
+    engineId: 'google',
   },
   {
     id: 'emails',
     name: 'Usuarios y emails',
     description: 'Localiza direcciones de correo electrónico y usuarios expuestos.',
+    engineId: 'google',
+  },
+  {
+    id: 'bing-operadores',
+    name: 'Operadores de Bing',
+    description: 'Operadores soportados por el buscador Bing de Microsoft.',
+    engineId: 'bing',
+  },
+  {
+    id: 'duckduckgo-operadores',
+    name: 'Operadores de DuckDuckGo',
+    description: 'Operadores básicos soportados por DuckDuckGo.',
+    engineId: 'duckduckgo',
+  },
+  {
+    id: 'yandex-operadores',
+    name: 'Operadores de Yandex',
+    description: 'Operadores compatibles con Yandex, incluidos los exclusivos mime:, lang: y domain:.',
+    engineId: 'yandex',
+  },
+  {
+    id: 'shodan-dispositivos',
+    name: 'Dispositivos y servicios',
+    description: 'Filtros de Shodan para localizar servicios y dispositivos por puerto, organización o sistema operativo.',
+    engineId: 'shodan',
+  },
+  {
+    id: 'shodan-camaras',
+    name: 'Cámaras y videovigilancia',
+    description: 'Dorks de Shodan para cámaras IP, streams RTSP y sistemas de videovigilancia.',
+    engineId: 'shodan',
+  },
+  {
+    id: 'shodan-bbdd',
+    name: 'Bases de datos expuestas',
+    description: 'Bases de datos accesibles desde Internet: MongoDB, Elasticsearch, Redis y MySQL.',
+    engineId: 'shodan',
+  },
+  {
+    id: 'shodan-ics',
+    name: 'Sistemas industriales (ICS/SCADA)',
+    description: 'Dispositivos industriales y de control (Modbus, Siemens S7) expuestos en Internet.',
+    engineId: 'shodan',
+  },
+  {
+    id: 'censys-hosts',
+    name: 'Hosts y servicios',
+    description: 'Consultas de Censys sobre hosts, puertos, servicios y sistemas autónomos.',
+    engineId: 'censys',
+  },
+  {
+    id: 'censys-tls',
+    name: 'Certificados y TLS',
+    description: 'Búsquedas de Censys basadas en certificados TLS y sus emisores.',
+    engineId: 'censys',
+  },
+  {
+    id: 'github-secretos',
+    name: 'Secretos y credenciales',
+    description: 'Patrones de búsqueda en código GitHub para detectar secretos filtrados.',
+    engineId: 'github',
+  },
+  {
+    id: 'github-config',
+    name: 'Archivos de configuración',
+    description: 'Archivos de configuración sensibles publicados en repositorios de GitHub.',
+    engineId: 'github',
+  },
+  {
+    id: 'github-claves',
+    name: 'Claves privadas',
+    description: 'Claves privadas (RSA, OpenSSH, PGP) subidas por error a GitHub.',
+    engineId: 'github',
+  },
+  {
+    id: 'fofa-web',
+    name: 'Activos web',
+    description: 'Consultas FOFA sobre aplicaciones web: títulos, cuerpos de página y dominios.',
+    engineId: 'fofa',
+  },
+  {
+    id: 'fofa-red',
+    name: 'Red y dispositivos',
+    description: 'Consultas FOFA por puerto, país, protocolo y rangos de IP.',
+    engineId: 'fofa',
+  },
+  {
+    id: 'zoomeye-busqueda',
+    name: 'Búsqueda en ZoomEye',
+    description: 'Operadores de ZoomEye para aplicaciones, puertos, países y servicios.',
+    engineId: 'zoomeye',
+  },
+  {
+    id: 'crtsh-certificados',
+    name: 'Certificados (crt.sh)',
+    description: 'Búsquedas en crt.sh para enumerar subdominios a partir de certificados TLS.',
+    engineId: 'crtsh',
+  },
+  {
+    id: 'wayback-historial',
+    name: 'Historial y archivos',
+    description: 'Consultas a la Wayback Machine para snapshots históricos y archivos eliminados.',
+    engineId: 'wayback',
   },
 ]
 
-export const dorks: Dork[] = [
+const googleDorks: Array<Omit<Dork, 'engine'>> = [
   // Búsqueda básica
   {
     id: 'exact-phrase',
@@ -1078,27 +1284,1151 @@ export const dorks: Dork[] = [
   },
 ]
 
-export function getCategories(): Category[] {
-  return categories
+const bingDorks: Dork[] = [
+  {
+    id: 'bing-site',
+    operator: 'site:',
+    description: 'Restringe la búsqueda a un dominio o sitio en Bing.',
+    example: 'site:ejemplo.com seguridad',
+    usage: 'Busca solo dentro del dominio indicado en el índice de Bing.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-filetype',
+    operator: 'filetype:',
+    description: 'Busca archivos de un tipo específico.',
+    example: 'filetype:pdf "informe anual"',
+    usage: 'Devuelve archivos con la extensión indicada indexados por Bing.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-inurl',
+    operator: 'inurl:',
+    description: 'Busca términos dentro de la URL.',
+    example: 'inurl:admin login',
+    usage: 'Filtra páginas cuya URL contenga la palabra clave.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-intitle',
+    operator: 'intitle:',
+    description: 'Busca palabras en el título de la página.',
+    example: 'intitle:"panel de control"',
+    usage: 'Filtra resultados cuyo título contenga el término.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-ip',
+    operator: 'ip:',
+    description: 'Busca sitios alojados en una dirección IP.',
+    example: 'ip:200.33.14.1',
+    usage: 'Enumera los dominios que Bing conoce hospedados en esa IP (útil para encontrar vecinos de hosting).',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-contains',
+    operator: 'contains:',
+    description: 'Busca páginas que enlazan a un tipo de archivo.',
+    example: 'contains:pdf ciberseguridad',
+    usage: 'Encuentra páginas que incluyen enlaces a archivos del tipo indicado.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-inanchor',
+    operator: 'inanchor:',
+    description: 'Busca en el texto de los enlaces.',
+    example: 'inanchor:descargar software',
+    usage: 'Encuentra páginas enlazadas con ese texto de ancla.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+  {
+    id: 'bing-loc',
+    operator: 'loc:',
+    description: 'Filtra resultados por ubicación geográfica.',
+    example: 'restaurantes loc:mexico',
+    usage: 'Restringe los resultados al país o región indicados.',
+    category: 'bing-operadores',
+    engine: 'bing',
+  },
+]
+
+const duckduckgoDorks: Dork[] = [
+  {
+    id: 'ddg-site',
+    operator: 'site:',
+    description: 'Restringe la búsqueda a un dominio en DuckDuckGo.',
+    example: 'site:ejemplo.com',
+    usage: 'Busca solo dentro del dominio indicado.',
+    category: 'duckduckgo-operadores',
+    engine: 'duckduckgo',
+  },
+  {
+    id: 'ddg-filetype',
+    operator: 'filetype:',
+    description: 'Busca archivos de un tipo específico.',
+    example: 'filetype:pdf "política de privacidad"',
+    usage: 'Devuelve documentos con la extensión indicada.',
+    category: 'duckduckgo-operadores',
+    engine: 'duckduckgo',
+  },
+  {
+    id: 'ddg-intitle',
+    operator: 'intitle:',
+    description: 'Busca palabras en el título de la página.',
+    example: 'intitle:"index of"',
+    usage: 'Filtra resultados cuyo título contenga el término.',
+    category: 'duckduckgo-operadores',
+    engine: 'duckduckgo',
+  },
+  {
+    id: 'ddg-inurl',
+    operator: 'inurl:',
+    description: 'Busca términos dentro de la URL.',
+    example: 'inurl:login',
+    usage: 'Filtra páginas cuya URL contenga la palabra clave.',
+    category: 'duckduckgo-operadores',
+    engine: 'duckduckgo',
+  },
+  {
+    id: 'ddg-quote',
+    operator: '" "',
+    description: 'Busca una frase exacta.',
+    example: '"lista de precios confidencial"',
+    usage: 'Encuentra páginas que contengan exactamente esa frase.',
+    category: 'duckduckgo-operadores',
+    engine: 'duckduckgo',
+  },
+  {
+    id: 'ddg-exclude',
+    operator: '-',
+    description: 'Excluye una palabra o frase.',
+    example: 'servidores -minecraft',
+    usage: 'Elimina resultados relacionados con el término excluido.',
+    category: 'duckduckgo-operadores',
+    engine: 'duckduckgo',
+  },
+]
+
+const yandexDorks: Dork[] = [
+  {
+    id: 'yandex-site',
+    operator: 'site:',
+    description: 'Restringe la búsqueda a un dominio en Yandex.',
+    example: 'site:ejemplo.com',
+    usage: 'Busca solo dentro del dominio indicado en el índice de Yandex.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-mime',
+    operator: 'mime:',
+    description: 'Busca archivos por tipo MIME (exclusivo de Yandex).',
+    example: 'mime:pdf "seguridad informática"',
+    usage: 'Encuentra documentos del formato indicado (pdf, doc, xls, ppt...).',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-lang',
+    operator: 'lang:',
+    description: 'Filtra resultados por idioma del documento.',
+    example: 'lang:es ciberseguridad',
+    usage: 'Restringe los resultados a páginas escritas en el idioma indicado.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-domain',
+    operator: 'domain:',
+    description: 'Busca páginas que enlazan a un dominio.',
+    example: 'domain:ejemplo.com',
+    usage: 'Encuentra páginas que contienen enlaces hacia el dominio indicado.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-title',
+    operator: 'title:',
+    description: 'Busca palabras en el título de la página.',
+    example: 'title:"index of"',
+    usage: 'Filtra resultados cuyo título contenga el término.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-inurl',
+    operator: 'inurl:',
+    description: 'Busca términos dentro de la URL.',
+    example: 'inurl:admin',
+    usage: 'Filtra páginas cuya URL contenga la palabra clave.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-quote',
+    operator: '" "',
+    description: 'Busca una frase exacta.',
+    example: '"base de datos de clientes"',
+    usage: 'Encuentra páginas que contengan exactamente esa frase.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-or',
+    operator: '|',
+    description: 'Operador OR de Yandex: una palabra u otra.',
+    example: 'servidor | hosting | vps',
+    usage: 'Devuelve resultados que contengan cualquiera de los términos.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-exclude',
+    operator: '-',
+    description: 'Excluye una palabra de los resultados.',
+    example: 'hospedaje -gratis',
+    usage: 'Elimina resultados que contengan el término excluido.',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+  {
+    id: 'yandex-date',
+    operator: 'date:',
+    description: 'Filtra por fecha de publicación o modificación.',
+    example: 'seguridad date:20240101..20241231',
+    usage: 'Restringe los resultados al rango de fechas indicado (AAAAMMDD).',
+    category: 'yandex-operadores',
+    engine: 'yandex',
+  },
+]
+
+const shodanDorks: Dork[] = [
+  // Dispositivos y servicios
+  {
+    id: 'shodan-port-ssh',
+    operator: 'port:22',
+    description: 'Servidores SSH expuestos a Internet.',
+    example: 'port:22 country:MX',
+    usage: 'Localiza servidores con SSH accesible, combinando con país, organización o rango de red.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-port-rdp',
+    operator: 'port:3389',
+    description: 'Escritorios remotos (RDP) expuestos.',
+    example: 'port:3389 country:MX has_screenshot:true',
+    usage: 'Detecta máquinas Windows con RDP abierto; con captura de pantalla se ve el estado de la sesión.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-port-telnet',
+    operator: 'port:23',
+    description: 'Servicios Telnet activos (protocolo inseguro).',
+    example: 'port:23 "login:"',
+    usage: 'Encuentra dispositivos que aún aceptan Telnet, frecuentemente routers y equipos legacy.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-country',
+    operator: 'country:',
+    description: 'Filtra resultados por país (código ISO de 2 letras).',
+    example: 'country:MX port:21',
+    usage: 'Restringe los resultados a dispositivos geolocalizados en el país indicado.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-org',
+    operator: 'org:',
+    description: 'Filtra por organización propietaria de la red.',
+    example: 'org:"Telmex"',
+    usage: 'Enumera los dispositivos registrados a nombre de una empresa o ISP.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-product',
+    operator: 'product:',
+    description: 'Filtra por producto o software detectado en el banner.',
+    example: 'product:"Apache httpd"',
+    usage: 'Encuentra todos los servidores que ejecutan un software concreto.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-os',
+    operator: 'os:',
+    description: 'Filtra por sistema operativo detectado.',
+    example: 'os:"Windows" port:445',
+    usage: 'Localiza dispositivos según su sistema operativo (Windows, Linux, etc.).',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-vuln',
+    operator: 'vuln:',
+    description: 'Dispositivos vulnerables a un CVE concreto.',
+    example: 'vuln:CVE-2019-0708',
+    usage: 'Lista los hosts que Shodan identifica como vulnerables al CVE indicado.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-net',
+    operator: 'net:',
+    description: 'Filtra por rango de red en notación CIDR.',
+    example: 'net:200.33.0.0/16',
+    usage: 'Enumera todos los dispositivos indexados dentro de un bloque de IPs.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-http-title',
+    operator: 'http.title:',
+    description: 'Busca texto en el título de la página web del servicio.',
+    example: 'http.title:"Dashboard"',
+    usage: 'Encuentra interfaces web cuyo título contiene el texto indicado.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-ssl',
+    operator: 'ssl:',
+    description: 'Busca en los certificados SSL/TLS del servicio.',
+    example: 'ssl:"ejemplo.com"',
+    usage: 'Localiza servicios que presentan certificados del dominio indicado, incluidos subdominios ocultos.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-screenshot',
+    operator: 'has_screenshot:true',
+    description: 'Solo resultados con captura de pantalla.',
+    example: 'has_screenshot:true port:5900',
+    usage: 'Muestra servicios (VNC, RDP, web) de los que Shodan guardó una captura visual.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-default-password',
+    operator: '"default password"',
+    description: 'Dispositivos que anuncian contraseña por defecto en su banner.',
+    example: '"default password" port:8080',
+    usage: 'Encuentra equipos cuya interfaz indica que usan credenciales de fábrica.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-ftp-anon',
+    operator: '"230 Login successful." port:21',
+    description: 'Servidores FTP que permiten acceso anónimo.',
+    example: '"230 Login successful." port:21 country:MX',
+    usage: 'Detecta servidores FTP que aceptan el usuario anonymous sin contraseña.',
+    category: 'shodan-dispositivos',
+    engine: 'shodan',
+  },
+
+  // Cámaras y videovigilancia
+  {
+    id: 'shodan-webcam',
+    operator: 'webcam',
+    description: 'Cámaras web detectadas por banner.',
+    example: 'webcam country:MX',
+    usage: 'Localiza cámaras IP que exponen su interfaz o stream en Internet.',
+    category: 'shodan-camaras',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-rtsp',
+    operator: 'port:554',
+    description: 'Streams de video RTSP expuestos.',
+    example: 'port:554 "RTSP/1.0"',
+    usage: 'Encuentra servidores de streaming RTSP usados por cámaras y DVRs.',
+    category: 'shodan-camaras',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-webcamxp',
+    operator: 'product:"webcamXP httpd"',
+    description: 'Cámaras gestionadas con webcamXP.',
+    example: 'product:"webcamXP httpd"',
+    usage: 'Detecta instalaciones del software webcamXP accesibles desde Internet.',
+    category: 'shodan-camaras',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-hikvision',
+    operator: 'product:"Hikvision-Webs"',
+    description: 'Cámaras y grabadores Hikvision.',
+    example: 'product:"Hikvision-Webs" country:MX',
+    usage: 'Enumera dispositivos Hikvision (cámaras, NVR, DVR) expuestos en línea.',
+    category: 'shodan-camaras',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-axis-cam',
+    operator: 'http.title:"AXIS" has_screenshot:true',
+    description: 'Cámaras AXIS con captura disponible.',
+    example: 'http.title:"AXIS" has_screenshot:true',
+    usage: 'Muestra interfaces de cámaras AXIS de las que Shodan tiene captura de imagen.',
+    category: 'shodan-camaras',
+    engine: 'shodan',
+  },
+
+  // Bases de datos expuestas
+  {
+    id: 'shodan-mongodb',
+    operator: 'product:MongoDB',
+    description: 'Instancias MongoDB accesibles.',
+    example: 'product:MongoDB port:27017',
+    usage: 'Detecta bases de datos MongoDB expuestas; muchas no tienen autenticación habilitada.',
+    category: 'shodan-bbdd',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-elasticsearch',
+    operator: 'product:Elastic',
+    description: 'Clusters Elasticsearch expuestos.',
+    example: 'product:Elastic port:9200',
+    usage: 'Encuentra instancias Elasticsearch cuya API HTTP responde sin protección.',
+    category: 'shodan-bbdd',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-redis',
+    operator: 'product:Redis',
+    description: 'Servidores Redis sin autenticación.',
+    example: 'product:Redis port:6379',
+    usage: 'Localiza instancias Redis abiertas, históricamente desplegadas sin contraseña.',
+    category: 'shodan-bbdd',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-mysql',
+    operator: 'product:MySQL',
+    description: 'Servidores MySQL accesibles desde Internet.',
+    example: 'product:MySQL port:3306 country:MX',
+    usage: 'Enumera bases de datos MySQL que aceptan conexiones externas.',
+    category: 'shodan-bbdd',
+    engine: 'shodan',
+  },
+
+  // Sistemas industriales (ICS/SCADA)
+  {
+    id: 'shodan-modbus',
+    operator: 'port:502',
+    description: 'Dispositivos Modbus (automatización industrial).',
+    example: 'port:502 country:MX',
+    usage: 'Detecta PLCs y controladores industriales con el protocolo Modbus expuesto.',
+    category: 'shodan-ics',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-siemens-s7',
+    operator: 'port:102',
+    description: 'PLCs Siemens S7 (protocolo ISO-TSAP).',
+    example: 'port:102 "Siemens"',
+    usage: 'Localiza controladores Siemens S7 accesibles, usados en plantas industriales.',
+    category: 'shodan-ics',
+    engine: 'shodan',
+  },
+  {
+    id: 'shodan-tag-ics',
+    operator: 'tag:ics',
+    description: 'Dispositivos etiquetados como sistemas de control industrial.',
+    example: 'tag:ics country:MX',
+    usage: 'Usa la etiqueta ICS de Shodan para listar equipos SCADA/OT identificados automáticamente.',
+    category: 'shodan-ics',
+    engine: 'shodan',
+  },
+]
+
+const censysDorks: Dork[] = [
+  // Hosts y servicios
+  {
+    id: 'censys-service',
+    operator: 'services.service_name:',
+    description: 'Hosts que ejecutan un servicio concreto.',
+    example: 'services.service_name: SSH',
+    usage: 'Lista los hosts con un servicio identificado (HTTP, SSH, RDP, MQTT...).',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-port',
+    operator: 'services.port:',
+    description: 'Hosts con un puerto abierto específico.',
+    example: 'services.port: 3389',
+    usage: 'Encuentra todos los hosts que tienen abierto el puerto indicado.',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-country',
+    operator: 'location.country:',
+    description: 'Filtra hosts por país.',
+    example: 'location.country: Mexico',
+    usage: 'Restringe los resultados a la geolocalización indicada.',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-asn',
+    operator: 'autonomous_system.asn:',
+    description: 'Hosts dentro de un sistema autónomo (ASN).',
+    example: 'autonomous_system.asn: 28403',
+    usage: 'Enumera los hosts anunciados por el ASN indicado (de un ISP u organización).',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-asn-org',
+    operator: 'autonomous_system.organization:',
+    description: 'Hosts por organización propietaria del ASN.',
+    example: 'autonomous_system.organization: "Telmex"',
+    usage: 'Encuentra la infraestructura registrada a nombre de una organización.',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-software',
+    operator: 'services.software.product:',
+    description: 'Hosts que ejecutan un producto de software.',
+    example: 'services.software.product: Apache',
+    usage: 'Filtra por el software detectado en el servicio (Apache, nginx, OpenSSH...).',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-and',
+    operator: 'and',
+    description: 'Combina condiciones con and / or / not.',
+    example: 'services.port: 3389 and location.country: Mexico',
+    usage: 'Permite construir consultas booleanas precisas combinando varios campos.',
+    category: 'censys-hosts',
+    engine: 'censys',
+  },
+
+  // Certificados y TLS
+  {
+    id: 'censys-tls-cn',
+    operator: 'services.tls.certificates.leaf_data.subject.common_name:',
+    description: 'Hosts cuyo certificado TLS tiene un Common Name concreto.',
+    example: 'services.tls.certificates.leaf_data.subject.common_name: "ejemplo.com"',
+    usage: 'Descubre hosts que presentan certificados de un dominio, revelando subdominios e infraestructura.',
+    category: 'censys-tls',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-tls-issuer',
+    operator: 'services.tls.certificates.leaf_data.issuer.organization:',
+    description: 'Hosts por autoridad emisora del certificado.',
+    example: 'services.tls.certificates.leaf_data.issuer.organization: "Let\'s Encrypt"',
+    usage: 'Lista hosts cuyos certificados fueron emitidos por la CA indicada.',
+    category: 'censys-tls',
+    engine: 'censys',
+  },
+  {
+    id: 'censys-tls-selfsigned',
+    operator: 'services.tls.certificates.leaf_data.signature.self_signed:',
+    description: 'Hosts con certificados autofirmados.',
+    example: 'services.tls.certificates.leaf_data.signature.self_signed: true',
+    usage: 'Detecta servicios con certificados autofirmados, comunes en paneles internos expuestos.',
+    category: 'censys-tls',
+    engine: 'censys',
+  },
+]
+
+const githubDorks: Dork[] = [
+  // Secretos y credenciales
+  {
+    id: 'gh-api-key',
+    operator: '"api_key"',
+    description: 'Referencias a claves de API en el código.',
+    example: '"api_key" extension:py',
+    usage: 'Encuentra código que manipula claves de API, a menudo con valores reales hardcodeados.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-aws-secret',
+    operator: '"AWS_SECRET_ACCESS_KEY"',
+    description: 'Claves secretas de AWS expuestas.',
+    example: '"AWS_SECRET_ACCESS_KEY"',
+    usage: 'Detecta repositorios que contienen credenciales secretas de Amazon Web Services.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-akia',
+    operator: '"AKIA"',
+    description: 'Access Key IDs de AWS (empiezan por AKIA).',
+    example: '"AKIA" filename:credentials',
+    usage: 'Las claves de acceso de AWS comienzan con AKIA; este patrón las localiza en código público.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-access-token',
+    operator: '"access_token"',
+    description: 'Tokens de acceso en código fuente.',
+    example: '"access_token" extension:js',
+    usage: 'Busca tokens OAuth o de APIs incrustados directamente en el código.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-client-secret',
+    operator: '"client_secret"',
+    description: 'Secretos de cliente OAuth filtrados.',
+    example: '"client_secret" extension:json',
+    usage: 'Encuentra credenciales de aplicaciones OAuth publicadas por error.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-db-password',
+    operator: '"DB_PASSWORD"',
+    description: 'Contraseñas de base de datos en variables de entorno.',
+    example: '"DB_PASSWORD" filename:.env',
+    usage: 'Localiza archivos con la contraseña de la base de datos en texto plano.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-secret-key',
+    operator: '"SECRET_KEY"',
+    description: 'Claves secretas de frameworks (Django, Flask...).',
+    example: '"SECRET_KEY" extension:py',
+    usage: 'Detecta claves criptográficas de aplicaciones web subidas al repositorio.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+  {
+    id: 'gh-stripe',
+    operator: '"sk_live"',
+    description: 'Claves live de Stripe.',
+    example: '"sk_live"',
+    usage: 'Las claves secretas de producción de Stripe empiezan por sk_live; este patrón las encuentra.',
+    category: 'github-secretos',
+    engine: 'github',
+  },
+
+  // Archivos de configuración
+  {
+    id: 'gh-env',
+    operator: 'filename:.env',
+    description: 'Archivos .env con variables sensibles.',
+    example: 'filename:.env DB_PASSWORD',
+    usage: 'Los archivos .env suelen contener credenciales; este dork los localiza en repos públicos.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-wp-config',
+    operator: 'filename:wp-config.php',
+    description: 'Configuración de WordPress con credenciales.',
+    example: 'filename:wp-config.php DB_PASSWORD',
+    usage: 'wp-config.php contiene usuario y contraseña de la base de datos de WordPress.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-git-credentials',
+    operator: 'filename:.git-credentials',
+    description: 'Credenciales Git almacenadas en texto plano.',
+    example: 'filename:.git-credentials',
+    usage: 'Este archivo guarda usuario y contraseña (o token) de Git sin cifrar.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-docker-compose',
+    operator: 'filename:docker-compose.yml password',
+    description: 'docker-compose con contraseñas.',
+    example: 'filename:docker-compose.yml MYSQL_ROOT_PASSWORD',
+    usage: 'Encuentra composiciones Docker con contraseñas de servicios definidas en claro.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-ini-password',
+    operator: 'extension:ini password',
+    description: 'Archivos INI con contraseñas.',
+    example: 'extension:ini password',
+    usage: 'Localiza archivos de configuración .ini que contienen la palabra password.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-config-json',
+    operator: 'filename:config.json',
+    description: 'Archivos config.json con secretos.',
+    example: 'filename:config.json password',
+    usage: 'Muchos proyectos guardan credenciales en config.json; este dork los filtra.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-sql-dump',
+    operator: 'extension:sql',
+    description: 'Dumps de bases de datos SQL.',
+    example: 'extension:sql "INSERT INTO users"',
+    usage: 'Encuentra volcados de bases de datos subidos por error, con datos reales.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-htpasswd',
+    operator: 'filename:.htpasswd',
+    description: 'Archivos .htpasswd de Apache.',
+    example: 'filename:.htpasswd',
+    usage: 'Contiene usuarios y hashes de contraseñas de áreas protegidas de Apache.',
+    category: 'github-config',
+    engine: 'github',
+  },
+  {
+    id: 'gh-npmrc',
+    operator: 'filename:.npmrc _auth',
+    description: 'Tokens de npm en .npmrc.',
+    example: 'filename:.npmrc _auth',
+    usage: 'Detecta tokens de autenticación de registries npm publicados accidentalmente.',
+    category: 'github-config',
+    engine: 'github',
+  },
+
+  // Claves privadas
+  {
+    id: 'gh-rsa-key',
+    operator: '"BEGIN RSA PRIVATE KEY"',
+    description: 'Claves privadas RSA.',
+    example: '"-----BEGIN RSA PRIVATE KEY-----"',
+    usage: 'Encuentra claves privadas RSA subidas a repositorios públicos.',
+    category: 'github-claves',
+    engine: 'github',
+  },
+  {
+    id: 'gh-openssh-key',
+    operator: '"BEGIN OPENSSH PRIVATE KEY"',
+    description: 'Claves privadas OpenSSH.',
+    example: '"-----BEGIN OPENSSH PRIVATE KEY-----"',
+    usage: 'Detecta claves SSH en formato OpenSSH expuestas en código.',
+    category: 'github-claves',
+    engine: 'github',
+  },
+  {
+    id: 'gh-id-rsa',
+    operator: 'filename:id_rsa',
+    description: 'Archivos id_rsa (clave SSH privada).',
+    example: 'filename:id_rsa',
+    usage: 'id_rsa es el nombre estándar de la clave privada SSH; jamás debería estar en un repo.',
+    category: 'github-claves',
+    engine: 'github',
+  },
+  {
+    id: 'gh-pem',
+    operator: 'extension:pem',
+    description: 'Archivos PEM con claves o certificados.',
+    example: 'extension:pem "PRIVATE KEY"',
+    usage: 'Localiza archivos .pem que contienen material criptográfico privado.',
+    category: 'github-claves',
+    engine: 'github',
+  },
+  {
+    id: 'gh-ppk',
+    operator: 'extension:ppk',
+    description: 'Claves PuTTY (.ppk).',
+    example: 'extension:ppk',
+    usage: 'Encuentra claves privadas en formato PuTTY compartidas por error.',
+    category: 'github-claves',
+    engine: 'github',
+  },
+  {
+    id: 'gh-pgp-key',
+    operator: '"BEGIN PGP PRIVATE KEY BLOCK"',
+    description: 'Claves privadas PGP.',
+    example: '"-----BEGIN PGP PRIVATE KEY BLOCK-----"',
+    usage: 'Detecta anillos de claves PGP privadas publicados en repositorios.',
+    category: 'github-claves',
+    engine: 'github',
+  },
+]
+
+const fofaDorks: Dork[] = [
+  // Activos web
+  {
+    id: 'fofa-title',
+    operator: 'title=',
+    description: 'Busca texto en el título de la página.',
+    example: 'title="Panel de administración"',
+    usage: 'Filtra activos web cuyo <title> coincide con el texto indicado.',
+    category: 'fofa-web',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-body',
+    operator: 'body=',
+    description: 'Busca texto en el cuerpo HTML de la respuesta.',
+    example: 'body="wp-content"',
+    usage: 'Encuentra sitios cuyo HTML contiene el texto indicado (p. ej. instalaciones WordPress).',
+    category: 'fofa-web',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-header',
+    operator: 'header=',
+    description: 'Busca texto en las cabeceras HTTP.',
+    example: 'header="nginx"',
+    usage: 'Filtra por contenido de las cabeceras de respuesta (servidor, tecnologías).',
+    category: 'fofa-web',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-domain',
+    operator: 'domain=',
+    description: 'Busca activos de un dominio y sus subdominios.',
+    example: 'domain="ejemplo.com"',
+    usage: 'Enumera todos los activos asociados al dominio raíz indicado.',
+    category: 'fofa-web',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-host',
+    operator: 'host=',
+    description: 'Busca por hostname exacto.',
+    example: 'host="ejemplo.com"',
+    usage: 'Muestra los activos cuyo host coincide exactamente con el valor.',
+    category: 'fofa-web',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-app',
+    operator: 'app=',
+    description: 'Busca por aplicación o producto reconocido por FOFA.',
+    example: 'app="Apache-Tomcat"',
+    usage: 'Usa el fingerprint de FOFA para localizar instancias de un software concreto.',
+    category: 'fofa-web',
+    engine: 'fofa',
+  },
+
+  // Red y dispositivos
+  {
+    id: 'fofa-port',
+    operator: 'port=',
+    description: 'Filtra por puerto abierto.',
+    example: 'port="3389"',
+    usage: 'Lista los activos que tienen abierto el puerto indicado.',
+    category: 'fofa-red',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-country',
+    operator: 'country=',
+    description: 'Filtra por país (código ISO).',
+    example: 'country="MX"',
+    usage: 'Restringe los resultados a activos geolocalizados en México u otro país.',
+    category: 'fofa-red',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-ip',
+    operator: 'ip=',
+    description: 'Busca por IP o rango CIDR.',
+    example: 'ip="200.33.0.0/16"',
+    usage: 'Enumera los activos dentro de una IP o bloque de red concreto.',
+    category: 'fofa-red',
+    engine: 'fofa',
+  },
+  {
+    id: 'fofa-protocol',
+    operator: 'protocol=',
+    description: 'Filtra por protocolo detectado.',
+    example: 'protocol="modbus"',
+    usage: 'Encuentra dispositivos que hablan un protocolo concreto (modbus, mqtt, ssh...).',
+    category: 'fofa-red',
+    engine: 'fofa',
+  },
+]
+
+const zoomeyeDorks: Dork[] = [
+  {
+    id: 'ze-app',
+    operator: 'app:',
+    description: 'Busca por aplicación o componente.',
+    example: 'app:"Apache httpd"',
+    usage: 'Localiza dispositivos que ejecutan la aplicación indicada.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-port',
+    operator: 'port:',
+    description: 'Filtra por puerto abierto.',
+    example: 'port:22',
+    usage: 'Lista dispositivos con el puerto indicado accesible.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-country',
+    operator: 'country:',
+    description: 'Filtra por país (código ISO).',
+    example: 'country:MX',
+    usage: 'Restringe los resultados a dispositivos del país indicado.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-city',
+    operator: 'city:',
+    description: 'Filtra por ciudad.',
+    example: 'city:"Mexico City"',
+    usage: 'Acota los resultados a una ciudad concreta.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-service',
+    operator: 'service:',
+    description: 'Filtra por servicio detectado.',
+    example: 'service:ssh',
+    usage: 'Encuentra dispositivos que ofrecen el servicio indicado (ssh, ftp, rtsp...).',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-os',
+    operator: 'os:',
+    description: 'Filtra por sistema operativo.',
+    example: 'os:Windows',
+    usage: 'Muestra dispositivos según el sistema operativo identificado.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-device',
+    operator: 'device:',
+    description: 'Filtra por tipo de dispositivo.',
+    example: 'device:webcam',
+    usage: 'Localiza clases de dispositivos: webcam, router, printer...',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-hostname',
+    operator: 'hostname:',
+    description: 'Busca por nombre de host.',
+    example: 'hostname:ejemplo.com',
+    usage: 'Encuentra dispositivos cuyo hostname coincide con el valor.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-cidr',
+    operator: 'cidr:',
+    description: 'Filtra por bloque de red CIDR.',
+    example: 'cidr:200.33.0.0/16',
+    usage: 'Enumera dispositivos dentro del rango de IPs indicado.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+  {
+    id: 'ze-ssl',
+    operator: 'ssl:',
+    description: 'Busca en certificados SSL.',
+    example: 'ssl:"ejemplo.com"',
+    usage: 'Localiza servicios cuyo certificado menciona el dominio indicado.',
+    category: 'zoomeye-busqueda',
+    engine: 'zoomeye',
+  },
+]
+
+const crtshDorks: Dork[] = [
+  {
+    id: 'crtsh-wildcard',
+    operator: '%.',
+    description: 'Todos los subdominios con certificado emitido.',
+    example: '%.ejemplo.com',
+    usage: 'Enumera subdominios de un dominio gracias a los registros públicos de Certificate Transparency.',
+    category: 'crtsh-certificados',
+    engine: 'crtsh',
+  },
+  {
+    id: 'crtsh-exact',
+    operator: 'dominio exacto',
+    description: 'Certificados de un dominio concreto.',
+    example: 'ejemplo.com',
+    usage: 'Muestra todos los certificados emitidos para el dominio exacto.',
+    category: 'crtsh-certificados',
+    engine: 'crtsh',
+  },
+  {
+    id: 'crtsh-gob-mx',
+    operator: '%.gob.mx',
+    description: 'Subdominios del gobierno de México.',
+    example: '%.gob.mx',
+    usage: 'Ejemplo de reconocimiento pasivo sobre un TLD institucional completo.',
+    category: 'crtsh-certificados',
+    engine: 'crtsh',
+  },
+  {
+    id: 'crtsh-nested',
+    operator: 'sub.%.',
+    description: 'Subdominios de segundo nivel.',
+    example: 'dev.%.ejemplo.com',
+    usage: 'Combina un prefijo con el comodín para afinar la enumeración (entornos dev, staging...).',
+    category: 'crtsh-certificados',
+    engine: 'crtsh',
+  },
+  {
+    id: 'crtsh-sha1',
+    operator: 'huella SHA-1',
+    description: 'Busca un certificado por su huella.',
+    example: 'a9993e364706816aba3e25717850c26c9cd0d89d',
+    usage: 'Pegando la huella SHA-1 de un certificado se localiza su registro exacto.',
+    category: 'crtsh-certificados',
+    engine: 'crtsh',
+  },
+]
+
+const waybackDorks: Dork[] = [
+  {
+    id: 'wb-snapshot',
+    operator: 'dominio',
+    description: 'Snapshots históricos de un sitio.',
+    example: 'ejemplo.com',
+    usage: 'Muestra la línea de tiempo con todas las capturas guardadas del dominio.',
+    category: 'wayback-historial',
+    engine: 'wayback',
+  },
+  {
+    id: 'wb-file',
+    operator: 'ruta de archivo',
+    description: 'Versión archivada de un archivo concreto.',
+    example: 'ejemplo.com/robots.txt',
+    usage: 'Recupera versiones antiguas de archivos como robots.txt, sitemap.xml o PDFs.',
+    category: 'wayback-historial',
+    engine: 'wayback',
+  },
+  {
+    id: 'wb-wildcard',
+    operator: 'dominio/*',
+    description: 'Todas las URLs archivadas de un dominio.',
+    example: 'ejemplo.com/*',
+    usage: 'Lista todas las rutas capturadas del sitio; ideal para descubrir endpoints olvidados.',
+    category: 'wayback-historial',
+    engine: 'wayback',
+  },
+  {
+    id: 'wb-deleted',
+    operator: 'página eliminada',
+    description: 'Páginas que ya no existen en el sitio actual.',
+    example: 'ejemplo.com/admin/login.php',
+    usage: 'Accede a páginas retiradas (paneles, documentos) que siguen en el archivo histórico.',
+    category: 'wayback-historial',
+    engine: 'wayback',
+  },
+  {
+    id: 'wb-subdomains',
+    operator: '*.dominio',
+    description: 'Capturas de subdominios de un dominio.',
+    example: '*.ejemplo.com',
+    usage: 'Explora snapshots de todos los subdominios archivados del dominio.',
+    category: 'wayback-historial',
+    engine: 'wayback',
+  },
+]
+
+export const dorks: Dork[] = [
+  ...googleDorks.map((dork) => ({ ...dork, engine: 'google' })),
+  ...bingDorks,
+  ...duckduckgoDorks,
+  ...yandexDorks,
+  ...shodanDorks,
+  ...censysDorks,
+  ...githubDorks,
+  ...fofaDorks,
+  ...zoomeyeDorks,
+  ...crtshDorks,
+  ...waybackDorks,
+]
+
+export function getEngines(): Engine[] {
+  return engines
+}
+
+export function getEngineById(engineId: string): Engine | undefined {
+  return engines.find((engine) => engine.id === engineId)
+}
+
+export function getCategories(engineId?: string): Category[] {
+  return engineId ? categories.filter((category) => category.engineId === engineId) : categories
+}
+
+export function getCategoriesByEngine(engineId: string): Category[] {
+  return categories.filter((category) => category.engineId === engineId)
 }
 
 export function getDorks(): Dork[] {
   return dorks
 }
 
+export function getDorksByEngine(engineId: string): Dork[] {
+  return dorks.filter((dork) => dork.engine === engineId)
+}
+
 export function getDorksByCategory(categoryId: string): Dork[] {
   return dorks.filter((dork) => dork.category === categoryId)
 }
 
-export function searchDorks(query: string, categoryId?: string): Dork[] {
+export function countDorksByEngine(): Record<string, number> {
+  return dorks.reduce(
+    (acc, dork) => {
+      acc[dork.engine] = (acc[dork.engine] ?? 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+}
+
+export function searchDorks(query: string, categoryId?: string, engineId?: string): Dork[] {
   const lowerQuery = query.toLowerCase()
   return dorks.filter((dork) => {
+    const matchesEngine = !engineId || dork.engine === engineId
     const matchesCategory = !categoryId || dork.category === categoryId
     const matchesQuery =
       dork.operator.toLowerCase().includes(lowerQuery) ||
       dork.description.toLowerCase().includes(lowerQuery) ||
       dork.example.toLowerCase().includes(lowerQuery) ||
       dork.usage.toLowerCase().includes(lowerQuery)
-    return matchesCategory && matchesQuery
+    return matchesEngine && matchesCategory && matchesQuery
   })
+}
+
+function toBase64(value: string): string {
+  return btoa(unescape(encodeURIComponent(value)))
+}
+
+export function buildSearchUrl(engine: Engine | string, query: string): string {
+  const resolved = typeof engine === 'string' ? getEngineById(engine) : engine
+  if (!resolved) {
+    throw new Error(`Motor de búsqueda desconocido: ${engine}`)
+  }
+  if (resolved.id === 'fofa') {
+    return resolved.urlTemplate.replace('{query}', toBase64(query))
+  }
+  if (resolved.id === 'wayback') {
+    return resolved.urlTemplate.replace('{query}', query)
+  }
+  return resolved.urlTemplate.replace('{query}', encodeURIComponent(query))
 }

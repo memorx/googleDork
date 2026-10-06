@@ -1,17 +1,18 @@
 # GoogleDork
 
-Panel web para explorar, buscar y probar Google Dorks organizados por categoría.
+Panel web multi-motor para explorar, buscar y probar dorks organizados por motor y categoría.
 
-![Tests](https://img.shields.io/badge/tests-16%20unit%20%2B%205%20e2e-brightgreen)
+![Tests](https://img.shields.io/badge/tests-38%20unit%20%2B%2010%20e2e-brightgreen)
 
 ## Características
 
-- ✅ Colección completa de Google Dorks cubriendo todos los operadores principales.
-- ✅ Organización por categorías: básicos, sitio/URL, título/texto, archivos, información, local/mapas, redes sociales, avanzados y seguridad.
-- ✅ Búsqueda en tiempo real por operador, descripción o ejemplo.
+- ✅ 233 dorks en 11 motores: Google, Bing, DuckDuckGo, Yandex, Shodan, Censys, GitHub, FOFA, ZoomEye, crt.sh y Wayback Machine.
+- ✅ Barra de pestañas por motor con color distintivo y conteo de dorks.
+- ✅ Organización por categorías dentro de cada motor.
+- ✅ Búsqueda en tiempo real por operador, descripción o ejemplo (se conserva al cambiar de motor).
 - ✅ Filtros por categoría con conteo.
 - ✅ Botón para copiar el ejemplo al portapapeles.
-- ✅ Botón para probar el dork directamente en Google.
+- ✅ Botón para probar el dork directamente en su motor (FOFA codifica la consulta en Base64).
 - ✅ Diseño responsivo (móvil, tablet, desktop).
 - ✅ Modo oscuro automático.
 - ✅ Tests unitarios y e2e con Vitest + Playwright.
@@ -51,7 +52,7 @@ npm run preview
 
 ## Advertencia ética
 
-Los Google Dorks son herramientas legítimas de investigación y auditoría de seguridad. Úsalos únicamente en sistemas que te pertenezcan o con autorización explícita del propietario.
+Los dorks son herramientas legítimas de investigación y auditoría de seguridad. Úsalos únicamente en sistemas que te pertenezcan o con autorización explícita del propietario.
 
 ## Licencia
 

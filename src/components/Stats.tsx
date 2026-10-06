@@ -1,10 +1,15 @@
-import { categories, dorks } from '../data/dorks'
+import { getCategoriesByEngine, getDorksByEngine, getEngineById } from '../data/dorks'
 
 interface StatsProps {
+  engineId: string
   filteredCount: number
 }
 
-export function Stats({ filteredCount }: StatsProps) {
+export function Stats({ engineId, filteredCount }: StatsProps) {
+  const engine = getEngineById(engineId)
+  const totalDorks = getDorksByEngine(engineId).length
+  const totalCategories = getCategoriesByEngine(engineId).length
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <div className="stat-card">
@@ -19,8 +24,10 @@ export function Stats({ filteredCount }: StatsProps) {
           </svg>
         </div>
         <div>
-          <p className="text-2xl font-bold text-[var(--text-primary)]">{dorks.length}</p>
-          <p className="text-sm text-[var(--text-secondary)]">Dorks totales</p>
+          <p className="text-2xl font-bold text-[var(--text-primary)]">{totalDorks}</p>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Dorks en {engine?.name ?? engineId}
+          </p>
         </div>
       </div>
 
@@ -36,7 +43,7 @@ export function Stats({ filteredCount }: StatsProps) {
           </svg>
         </div>
         <div>
-          <p className="text-2xl font-bold text-[var(--text-primary)]">{categories.length}</p>
+          <p className="text-2xl font-bold text-[var(--text-primary)]">{totalCategories}</p>
           <p className="text-sm text-[var(--text-secondary)]">Categorías</p>
         </div>
       </div>

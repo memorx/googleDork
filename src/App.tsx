@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { categories, dorks, searchDorks } from './data/dorks'
+import { getCategoriesByEngine, getDorksByEngine, searchDorks } from './data/dorks'
 import { CategoryFilter } from './components/CategoryFilter'
 import { DorkCard } from './components/DorkCard'
 import { EmptyState } from './components/EmptyState'
+import { EngineTabs } from './components/EngineTabs'
 import { Header } from './components/Header'
 import { SearchBar } from './components/SearchBar'
 import { Stats } from './components/Stats'
@@ -10,20 +11,32 @@ import { Stats } from './components/Stats'
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedEngine, setSelectedEngine] = useState('google')
+
+  const engineCategories = useMemo(
+    () => getCategoriesByEngine(selectedEngine),
+    [selectedEngine],
+  )
 
   const counts = useMemo(() => {
-    return categories.reduce(
+    const engineDorks = getDorksByEngine(selectedEngine)
+    return engineCategories.reduce(
       (acc, category) => {
-        acc[category.id] = dorks.filter((dork) => dork.category === category.id).length
+        acc[category.id] = engineDorks.filter((dork) => dork.category === category.id).length
         return acc
       },
       {} as Record<string, number>,
     )
-  }, [])
+  }, [selectedEngine, engineCategories])
 
   const filteredDorks = useMemo(() => {
-    return searchDorks(searchQuery, selectedCategory || undefined)
-  }, [searchQuery, selectedCategory])
+    return searchDorks(searchQuery, selectedCategory || undefined, selectedEngine)
+  }, [searchQuery, selectedCategory, selectedEngine])
+
+  const handleSelectEngine = (engineId: string) => {
+    setSelectedEngine(engineId)
+    setSelectedCategory(null)
+  }
 
   const handleClearFilters = () => {
     setSearchQuery('')
@@ -35,6 +48,13 @@ function App() {
       <Header />
 
       <main className="flex-1">
+        {/* Engine tabs */}
+        <section className="border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+            <EngineTabs selectedEngine={selectedEngine} onSelectEngine={handleSelectEngine} />
+          </div>
+        </section>
+
         {/* Hero */}
         <section className="relative overflow-hidden bg-[var(--bg-primary)] pb-12 pt-10">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
@@ -48,7 +68,8 @@ function App() {
                 <span className="gradient-text">búsquedas avanzadas</span>
               </h2>
               <p className="mx-auto max-w-2xl text-lg text-[var(--text-secondary)]">
-                Colección completa de Google Dorks organizados por categoría. Buscá, filtrá,
+                Colección completa de dorks para 11 motores: Google, Bing, DuckDuckGo, Yandex,
+                Shodan, Censys, GitHub, FOFA, ZoomEye, crt.sh y Wayback Machine. Buscá, filtrá,
                 copiá y probá cada operador directamente.
               </p>
             </div>
@@ -62,11 +83,12 @@ function App() {
         {/* Content */}
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <Stats filteredCount={filteredDorks.length} />
+            <Stats engineId={selectedEngine} filteredCount={filteredDorks.length} />
           </div>
 
           <div className="mb-8">
             <CategoryFilter
+              categories={engineCategories}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               counts={counts}
@@ -94,7 +116,7 @@ function App() {
 
               <section
                 className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                aria-label="Listado de Google Dorks"
+                aria-label="Listado de dorks"
               >
                 {filteredDorks.map((dork, index) => (
                   <DorkCard key={dork.id} dork={dork} index={index} />
@@ -108,7 +130,7 @@ function App() {
       <footer className="border-t border-[var(--border-color)] bg-[var(--bg-primary)] py-8">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <p className="mb-2 text-sm text-[var(--text-secondary)]">
-            GoogleDork — Herramienta educativa para seguridad informática.
+            GoogleDork — Herramienta educativa multi-motor para seguridad informática.
           </p>
           <p className="text-xs text-[var(--text-tertiary)]">
             Usá estos dorks únicamente en sistemas propios o con autorización explícita.

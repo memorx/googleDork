@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { categories, dorks, getCategories, getDorks, getDorksByCategory, searchDorks } from './dorks'
+import {
+  buildSearchUrl,
+  categories,
+  countDorksByEngine,
+  dorks,
+  engines,
+  getCategories,
+  getCategoriesByEngine,
+  getDorks,
+  getDorksByCategory,
+  getDorksByEngine,
+  getEngineById,
+  getEngines,
+  searchDorks,
+} from './dorks'
 
 describe('dorks data', () => {
   it('has categories', () => {
@@ -12,6 +26,25 @@ describe('dorks data', () => {
     expect(getDorks()).toEqual(dorks)
   })
 
+  it('has 11 engines', () => {
+    expect(engines).toHaveLength(11)
+    expect(getEngines()).toEqual(engines)
+    const ids = engines.map((engine) => engine.id)
+    expect(ids).toEqual([
+      'google',
+      'bing',
+      'duckduckgo',
+      'yandex',
+      'shodan',
+      'censys',
+      'github',
+      'fofa',
+      'zoomeye',
+      'crtsh',
+      'wayback',
+    ])
+  })
+
   it('every dork belongs to a valid category', () => {
     const categoryIds = new Set(categories.map((c) => c.id))
     for (const dork of dorks) {
@@ -19,7 +52,7 @@ describe('dorks data', () => {
     }
   })
 
-  it('every dork has required fields', () => {
+  it('every dork has required fields including engine', () => {
     for (const dork of dorks) {
       expect(dork.id).toBeTruthy()
       expect(dork.operator).toBeTruthy()
@@ -27,6 +60,53 @@ describe('dorks data', () => {
       expect(dork.example).toBeTruthy()
       expect(dork.usage).toBeTruthy()
       expect(dork.category).toBeTruthy()
+      expect(dork.engine).toBeTruthy()
+    }
+  })
+
+  it('every dork has a valid engine and its category belongs to that engine', () => {
+    const engineIds = new Set(engines.map((e) => e.id))
+    const categoryById = new Map(categories.map((c) => [c.id, c]))
+    for (const dork of dorks) {
+      expect(engineIds.has(dork.engine)).toBe(true)
+      expect(categoryById.get(dork.category)?.engineId).toBe(dork.engine)
+    }
+  })
+
+  it('every category belongs to a valid engine', () => {
+    const engineIds = new Set(engines.map((e) => e.id))
+    for (const category of categories) {
+      expect(engineIds.has(category.engineId)).toBe(true)
+    }
+  })
+
+  it('every engine has at least one dork', () => {
+    const counts = countDorksByEngine()
+    for (const engine of engines) {
+      expect(counts[engine.id]).toBeGreaterThan(0)
+    }
+  })
+
+  it('getCategoriesByEngine returns only categories of that engine', () => {
+    const googleCategories = getCategoriesByEngine('google')
+    expect(googleCategories).toHaveLength(14)
+    for (const category of googleCategories) {
+      expect(category.engineId).toBe('google')
+    }
+    expect(getCategoriesByEngine('shodan').length).toBeGreaterThan(0)
+    expect(getCategories('shodan')).toEqual(getCategoriesByEngine('shodan'))
+  })
+
+  it('getDorksByEngine returns only dorks of that engine', () => {
+    const shodanDorks = getDorksByEngine('shodan')
+    expect(shodanDorks.length).toBeGreaterThanOrEqual(20)
+    for (const dork of shodanDorks) {
+      expect(dork.engine).toBe('shodan')
+    }
+    const githubDorks = getDorksByEngine('github')
+    expect(githubDorks.length).toBeGreaterThanOrEqual(20)
+    for (const dork of githubDorks) {
+      expect(dork.engine).toBe('github')
     }
   })
 
@@ -63,7 +143,67 @@ describe('dorks data', () => {
     }
   })
 
+  it('combines search with engine filter', () => {
+    const results = searchDorks('port', undefined, 'shodan')
+    expect(results.length).toBeGreaterThan(0)
+    for (const dork of results) {
+      expect(dork.engine).toBe('shodan')
+    }
+    // El mismo término no devuelve dorks de Google en modo Shodan
+    expect(results.some((d) => d.engine === 'google')).toBe(false)
+  })
+
   it('returns empty array for non-matching search', () => {
     expect(searchDorks('xyznonexistent123')).toEqual([])
+  })
+})
+
+describe('buildSearchUrl', () => {
+  it('builds a Google URL with encoded query', () => {
+    expect(buildSearchUrl('google', 'site:example.com')).toBe(
+      'https://www.google.com/search?q=site%3Aexample.com',
+    )
+  })
+
+  it('builds a Shodan URL with encoded query', () => {
+    expect(buildSearchUrl('shodan', 'webcam country:MX')).toBe(
+      'https://www.shodan.io/search?query=webcam%20country%3AMX',
+    )
+  })
+
+  it('builds a GitHub URL pointing to code search', () => {
+    expect(buildSearchUrl('github', 'filename:.env')).toBe(
+      'https://github.com/search?q=filename%3A.env&type=code',
+    )
+  })
+
+  it('builds a FOFA URL with the query in base64', () => {
+    const query = 'port="3389"'
+    expect(buildSearchUrl('fofa', query)).toBe(`https://fofa.info/result?qbase64=${btoa(query)}`)
+  })
+
+  it('builds a FOFA URL handling non-ASCII characters', () => {
+    const query = 'title="Panel de administración"'
+    const url = buildSearchUrl('fofa', query)
+    expect(url.startsWith('https://fofa.info/result?qbase64=')).toBe(true)
+    expect(url).toContain(btoa(unescape(encodeURIComponent(query))))
+  })
+
+  it('builds a Wayback URL with the query as path (no encoding)', () => {
+    expect(buildSearchUrl('wayback', 'example.com/robots.txt')).toBe(
+      'https://web.archive.org/web/*/example.com/robots.txt',
+    )
+  })
+
+  it('accepts an Engine object', () => {
+    const engine = getEngineById('censys')
+    expect(engine).toBeTruthy()
+    expect(buildSearchUrl(engine!, 'services.port: 22')).toBe(
+      'https://search.censys.io/search?resource=hosts&q=services.port%3A%2022',
+    )
+  })
+
+  it('throws for an unknown engine', () => {
+    expect(() => buildSearchUrl('unknown-engine', 'test')).toThrow()
   })
 })

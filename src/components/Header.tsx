@@ -20,7 +20,7 @@ export function Header() {
               Google<span className="gradient-text">Dork</span>
             </h1>
             <p className="hidden text-xs text-[var(--text-tertiary)] sm:block">
-              Panel de búsquedas avanzadas
+              Panel de dorks multi-motor
             </p>
           </div>
         </div>
