@@ -212,9 +212,8 @@ body {
 }
 
 .btn:focus-visible {
-  ring: 2px;
-  ring-offset: 2px;
-  ring-color: var(--accent-500);
+  outline: 2px solid var(--accent-500);
+  outline-offset: 2px;
 }
 
 .btn-primary {
