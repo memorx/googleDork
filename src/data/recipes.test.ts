@@ -3,9 +3,9 @@ import { engines, buildSearchUrl } from './dorks'
 import { getRecipeById, getRecipes, recipes } from './recipes'
 
 describe('recipes data', () => {
-  it('has between 8 and 12 recipes', () => {
-    expect(recipes.length).toBeGreaterThanOrEqual(8)
-    expect(recipes.length).toBeLessThanOrEqual(12)
+  it('has between 12 and 20 recipes', () => {
+    expect(recipes.length).toBeGreaterThanOrEqual(12)
+    expect(recipes.length).toBeLessThanOrEqual(20)
   })
 
   it('every recipe has required fields', () => {

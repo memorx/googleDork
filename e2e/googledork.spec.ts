@@ -83,6 +83,19 @@ test.describe('GoogleDork app', () => {
     await expect(page.locator('html[data-theme="dark"]')).toBeAttached()
   })
 
+  test('hacker theme applies data-theme="hacker" and persists across reloads', async ({ page }) => {
+    await page.goto('/')
+    // claro → oscuro → hacker
+    await page.getByRole('button', { name: /cambiar a modo oscuro/i }).click()
+    await expect(page.locator('html[data-theme="dark"]')).toBeAttached()
+    await page.getByRole('button', { name: /cambiar a modo hacker/i }).click()
+    await expect(page.locator('html[data-theme="hacker"]')).toBeAttached()
+
+    await page.reload()
+    await expect(page.locator('html[data-theme="hacker"]')).toBeAttached()
+    await expect(page.getByRole('button', { name: /cambiar a modo claro/i })).toBeVisible()
+  })
+
   test('marks a favorite and sees it in the favorites view', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Agregar a favoritos' }).first().click()

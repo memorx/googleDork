@@ -183,9 +183,9 @@ function App() {
 
         {/* Hero */}
         <section className="relative overflow-hidden bg-[var(--bg-primary)] pb-12 pt-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
+          <div className="hero-glow-bg absolute inset-0" />
+          <div className="hero-glow-1 absolute -right-20 -top-20 h-64 w-64 rounded-full blur-3xl" />
+          <div className="hero-glow-2 absolute -bottom-20 -left-20 h-64 w-64 rounded-full blur-3xl" />
 
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">

@@ -99,6 +99,30 @@ describe('dorks data', () => {
     }
   })
 
+  it('the new GHDB-style categories exist and are valid Google categories', () => {
+    const newCategories: Array<{ id: string; sensitive: boolean }> = [
+      { id: 'sensitive-files', sensitive: true },
+      { id: 'login-panels', sensitive: false },
+      { id: 'error-messages', sensitive: true },
+      { id: 'dashboards', sensitive: true },
+      { id: 'iot-devices', sensitive: true },
+      { id: 'cloud-buckets', sensitive: true },
+      { id: 'leaky-documents', sensitive: true },
+    ]
+    for (const { id, sensitive } of newCategories) {
+      const category = getCategoriesByEngine('google').find((c) => c.id === id)
+      expect(category, `categoría ${id}`).toBeTruthy()
+      expect(Boolean(category!.sensitive)).toBe(sensitive)
+      expect(getDorksByCategory(id).length).toBeGreaterThanOrEqual(8)
+    }
+  })
+
+  it('every category has at least one dork', () => {
+    for (const category of categories) {
+      expect(getDorksByCategory(category.id).length).toBeGreaterThan(0)
+    }
+  })
+
   it('every engine has at least one dork', () => {
     const counts = countDorksByEngine()
     for (const engine of engines) {
@@ -108,7 +132,7 @@ describe('dorks data', () => {
 
   it('getCategoriesByEngine returns only categories of that engine', () => {
     const googleCategories = getCategoriesByEngine('google')
-    expect(googleCategories).toHaveLength(14)
+    expect(googleCategories).toHaveLength(21)
     for (const category of googleCategories) {
       expect(category.engineId).toBe('google')
     }

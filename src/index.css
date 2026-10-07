@@ -76,6 +76,39 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
   }
+
+  [data-theme="hacker"] {
+    --bg-primary: #0d120d;
+    --bg-secondary: #0a0f0a;
+    --bg-tertiary: #131b13;
+    --bg-card: #0e140e;
+    --bg-hover: #16221a;
+
+    --text-primary: #33ff66;
+    --text-secondary: #2bcc5f;
+    --text-tertiary: #2a8a4d;
+    --text-inverse: #04140a;
+
+    --border-color: #1c3323;
+    --border-strong: #2d4a35;
+
+    --accent-50: #0c2113;
+    --accent-100: #11331d;
+    --accent-200: #1e5c31;
+    --accent-500: #33ff66;
+    --accent-600: #00cc44;
+    --accent-700: #00a338;
+
+    --danger-50: #230d0d;
+    --success-50: #0c2113;
+    --warning-50: #241d08;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+    --shadow-glow: 0 0 18px -4px rgb(51 255 102 / 0.45);
+  }
 }
 
 * {
@@ -162,6 +195,81 @@ body {
   border-color: var(--accent-700);
 }
 
+/* Gradientes del hero (coherentes en los 3 temas) */
+.hero-glow-bg {
+  background: linear-gradient(
+    135deg,
+    rgb(99 102 241 / 0.05),
+    rgb(168 85 247 / 0.05),
+    rgb(236 72 153 / 0.05)
+  );
+}
+
+.hero-glow-1 {
+  background: rgb(99 102 241 / 0.1);
+}
+
+.hero-glow-2 {
+  background: rgb(168 85 247 / 0.1);
+}
+
+/* Tema hacker: estética de terminal verde */
+[data-theme="hacker"] body {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+[data-theme="hacker"] h1,
+[data-theme="hacker"] h2,
+[data-theme="hacker"] h3 {
+  text-shadow: 0 0 10px rgb(51 255 102 / 0.3);
+}
+
+[data-theme="hacker"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgb(0 0 0 / 0.12) 0,
+    rgb(0 0 0 / 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+[data-theme="hacker"] .dork-card,
+[data-theme="hacker"] .stat-card {
+  box-shadow:
+    inset 0 0 0 1px rgb(51 255 102 / 0.06),
+    0 0 14px -6px rgb(51 255 102 / 0.35);
+}
+
+[data-theme="hacker"] .dork-card:hover {
+  border-color: var(--accent-500);
+  box-shadow: var(--shadow-xl), var(--shadow-glow);
+}
+
+[data-theme="hacker"] .gradient-text {
+  background: linear-gradient(135deg, #66ff99, #00cc44);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+[data-theme="hacker"] .gradient-border::before {
+  background: linear-gradient(135deg, #33ff66, #00cc44, #0aff9d);
+}
+
+[data-theme="hacker"] .hero-glow-bg {
+  background: linear-gradient(135deg, rgb(51 255 102 / 0.06), rgb(0 204 68 / 0.04), transparent);
+}
+
+[data-theme="hacker"] .hero-glow-1,
+[data-theme="hacker"] .hero-glow-2 {
+  background: rgb(51 255 102 / 0.08);
+}
+
 /* Gradient text */
 .gradient-text {
   background: linear-gradient(135deg, var(--accent-600), #a855f7);
@@ -193,6 +301,11 @@ body {
 
 .gradient-border:hover::before {
   opacity: 1;
+}
+
+/* Logo badge */
+.logo-badge {
+  background: linear-gradient(135deg, var(--accent-600), var(--accent-500));
 }
 
 /* Button base */

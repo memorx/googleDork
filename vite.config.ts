@@ -13,5 +13,8 @@ export default defineConfig(({ command }) => ({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     exclude: ['node_modules', 'e2e'],
+    // Los tests de integración de App renderizan cientos de tarjetas en jsdom;
+    // en máquinas lentas el render inicial supera los 5s por defecto.
+    testTimeout: 15000,
   },
 }))

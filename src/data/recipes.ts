@@ -163,6 +163,71 @@ export const recipes: Recipe[] = [
     engine: 'netlas',
     sensitive: true,
   },
+  {
+    id: 'git-expuestos',
+    name: 'Repositorios .git expuestos',
+    description: 'Encuentra sitios que sirven su directorio .git por HTTP, filtrando el código fuente completo.',
+    steps: [
+      'inurl:"/.git/config" busca el archivo de configuración del repositorio en la URL.',
+      '"repositoryformatversion" es una cadena que solo aparece en .git/config reales: elimina falsos positivos.',
+      'Un .git accesible permite reconstruir el código fuente y su historial completo con herramientas como git-dumper.',
+    ],
+    query: 'inurl:"/.git/config" "repositoryformatversion"',
+    engine: 'google',
+    sensitive: true,
+  },
+  {
+    id: 'grafana-sin-login',
+    name: 'Dashboards Grafana sin login',
+    description: 'Localiza instancias de Grafana cuyo panel de login quedó indexado por Google.',
+    steps: [
+      'intitle:"Grafana" coincide con el título de la página de acceso de Grafana.',
+      'inurl:/login confirma que la URL es la pantalla de autenticación.',
+      'Versiones antiguas de Grafana tienen CVEs de bypass; en auditoría propia, verificá que exija credenciales.',
+    ],
+    query: 'intitle:"Grafana" inurl:/login',
+    engine: 'google',
+    sensitive: true,
+  },
+  {
+    id: 'buckets-s3-empresa',
+    name: 'Buckets S3 abiertos de una empresa',
+    description: 'Busca buckets de Amazon S3 indexados que mencionan el nombre de una organización.',
+    steps: [
+      'site:s3.amazonaws.com limita los resultados a URLs de buckets S3.',
+      '"ejemplo" se reemplaza por el nombre de la empresa auditada.',
+      'Los buckets públicos suelen contener respaldos, exports de bases de datos y documentos internos.',
+    ],
+    query: 'site:s3.amazonaws.com "ejemplo"',
+    engine: 'google',
+    sensitive: true,
+  },
+  {
+    id: 'docker-api-abierta',
+    name: 'APIs de Docker sin TLS',
+    description: 'Detecta daemons de Docker con la API remota expuesta en el puerto 2375 sin cifrado ni autenticación.',
+    steps: [
+      'port:2375 es el puerto estándar de la API de Docker sin TLS.',
+      'product:"Docker" confirma que el banner corresponde al daemon de Docker.',
+      'Una API abierta permite crear contenedores privilegiados y tomar el host: reportalo de inmediato.',
+    ],
+    query: 'port:2375 product:"Docker"',
+    engine: 'shodan',
+    sensitive: true,
+  },
+  {
+    id: 'errores-sql-php',
+    name: 'Apps PHP con errores SQL visibles',
+    description: 'Encuentra aplicaciones PHP que imprimen errores de MySQL en la respuesta, señal de posible inyección SQL.',
+    steps: [
+      'intext:"You have an error in your SQL syntax" es el mensaje exacto que imprime MySQL.',
+      'inurl:.php?id= acota a páginas con parámetros GET, el punto típico de inyección.',
+      'Un error visible confirma que la entrada del usuario llega sin sanitizar a la consulta.',
+    ],
+    query: 'intext:"You have an error in your SQL syntax" inurl:.php?id=',
+    engine: 'google',
+    sensitive: true,
+  },
 ]
 
 export function getRecipes(): Recipe[] {
