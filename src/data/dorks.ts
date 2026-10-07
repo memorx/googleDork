@@ -13,6 +13,8 @@ export interface Category {
   name: string
   description: string
   engineId: string
+  /** Marca categorías con dorks sensibles (auditoría) para mostrar aviso ético */
+  sensitive?: boolean
 }
 
 export interface Engine {
@@ -101,6 +103,41 @@ export const engines: Engine[] = [
     color: '#F59E0B',
     urlTemplate: 'https://web.archive.org/web/*/{query}',
   },
+  {
+    id: 'netlas',
+    name: 'Netlas',
+    description: 'Escáner de Internet con búsqueda de respuestas de servicios, hosts, dominios y CVEs.',
+    color: '#FF6B35',
+    urlTemplate: 'https://app.netlas.io/responses/?q={query}',
+  },
+  {
+    id: 'greynoise',
+    name: 'GreyNoise',
+    description: 'Inteligencia de amenazas: clasifica las IPs que escanean Internet (maliciosas o benignas).',
+    color: '#2DD4BF',
+    urlTemplate: 'https://viz.greynoise.io/query?gnql={query}',
+  },
+  {
+    id: 'binaryedge',
+    name: 'BinaryEdge',
+    description: 'Plataforma de escaneo de Internet: puertos, servicios, productos y vulnerabilidades por IP.',
+    color: '#DB2777',
+    urlTemplate: 'https://app.binaryedge.io/services/query?query={query}',
+  },
+  {
+    id: 'publicwww',
+    name: 'PublicWWW',
+    description: 'Buscador de código fuente HTML: localiza sitios que contienen un fragmento de código.',
+    color: '#65A30D',
+    urlTemplate: 'https://publicwww.com/websites/{query}/',
+  },
+  {
+    id: 'searxng',
+    name: 'SearXNG',
+    description: 'Meta-buscador open source que agrega resultados de Google, Bing y otros sin rastreo.',
+    color: '#3050FF',
+    urlTemplate: 'https://searx.be/search?q={query}',
+  },
 ]
 
 export const categories: Category[] = [
@@ -157,12 +194,14 @@ export const categories: Category[] = [
     name: 'Seguridad / Google Hacking',
     description: 'Dorks comunes para auditoría de seguridad y pruebas de penetración autorizadas.',
     engineId: 'google',
+    sensitive: true,
   },
   {
     id: 'cameras',
     name: 'Cámaras IP públicas',
     description: 'Dorks para localizar cámaras IP accesibles públicamente.',
     engineId: 'google',
+    sensitive: true,
   },
   {
     id: 'documents',
@@ -217,18 +256,21 @@ export const categories: Category[] = [
     name: 'Cámaras y videovigilancia',
     description: 'Dorks de Shodan para cámaras IP, streams RTSP y sistemas de videovigilancia.',
     engineId: 'shodan',
+    sensitive: true,
   },
   {
     id: 'shodan-bbdd',
     name: 'Bases de datos expuestas',
     description: 'Bases de datos accesibles desde Internet: MongoDB, Elasticsearch, Redis y MySQL.',
     engineId: 'shodan',
+    sensitive: true,
   },
   {
     id: 'shodan-ics',
     name: 'Sistemas industriales (ICS/SCADA)',
     description: 'Dispositivos industriales y de control (Modbus, Siemens S7) expuestos en Internet.',
     engineId: 'shodan',
+    sensitive: true,
   },
   {
     id: 'censys-hosts',
@@ -247,6 +289,7 @@ export const categories: Category[] = [
     name: 'Secretos y credenciales',
     description: 'Patrones de búsqueda en código GitHub para detectar secretos filtrados.',
     engineId: 'github',
+    sensitive: true,
   },
   {
     id: 'github-config',
@@ -259,6 +302,7 @@ export const categories: Category[] = [
     name: 'Claves privadas',
     description: 'Claves privadas (RSA, OpenSSH, PGP) subidas por error a GitHub.',
     engineId: 'github',
+    sensitive: true,
   },
   {
     id: 'fofa-web',
@@ -289,6 +333,54 @@ export const categories: Category[] = [
     name: 'Historial y archivos',
     description: 'Consultas a la Wayback Machine para snapshots históricos y archivos eliminados.',
     engineId: 'wayback',
+  },
+  {
+    id: 'netlas-respuestas',
+    name: 'Respuestas y servicios',
+    description: 'Consultas de Netlas sobre respuestas de servicios: hosts, puertos, IPs, protocolos y CVEs.',
+    engineId: 'netlas',
+  },
+  {
+    id: 'netlas-web',
+    name: 'Contenido web',
+    description: 'Búsquedas de Netlas en títulos, cuerpos HTML y rutas de las respuestas web.',
+    engineId: 'netlas',
+  },
+  {
+    id: 'greynoise-clasificacion',
+    name: 'Clasificación de IPs',
+    description: 'Consultas GNQL para clasificar IPs: maliciosas, benignas, actores y etiquetas de comportamiento.',
+    engineId: 'greynoise',
+  },
+  {
+    id: 'greynoise-contexto',
+    name: 'Contexto y metadatos',
+    description: 'Filtros de GreyNoise por país, organización y antigüedad de la actividad observada.',
+    engineId: 'greynoise',
+  },
+  {
+    id: 'binaryedge-servicios',
+    name: 'Servicios y puertos',
+    description: 'Consultas de BinaryEdge sobre puertos abiertos, productos y servicios detectados.',
+    engineId: 'binaryedge',
+  },
+  {
+    id: 'binaryedge-web',
+    name: 'Web y vulnerabilidades',
+    description: 'Búsquedas de BinaryEdge en títulos web y vulnerabilidades conocidas (CVE).',
+    engineId: 'binaryedge',
+  },
+  {
+    id: 'publicwww-codigo',
+    name: 'Código en el HTML',
+    description: 'Fragmentos de código fuente para localizar sitios en PublicWWW.',
+    engineId: 'publicwww',
+  },
+  {
+    id: 'searxng-operadores',
+    name: 'Operadores de SearXNG',
+    description: 'Operadores básicos del meta-buscador SearXNG, incluidos los bangs.',
+    engineId: 'searxng',
   },
 ]
 
@@ -2349,6 +2441,336 @@ const waybackDorks: Dork[] = [
   },
 ]
 
+const netlasDorks: Dork[] = [
+  // Respuestas y servicios
+  {
+    id: 'netlas-host',
+    operator: 'host:',
+    description: 'Busca respuestas asociadas a un host o dominio.',
+    example: 'host:ejemplo.com',
+    usage: 'Enumera los servicios y respuestas que Netlas indexó para el dominio indicado.',
+    category: 'netlas-respuestas',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-port',
+    operator: 'port:',
+    description: 'Filtra respuestas por puerto abierto.',
+    example: 'port:8080',
+    usage: 'Lista los servicios que responden en el puerto indicado en todo Internet.',
+    category: 'netlas-respuestas',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-cve',
+    operator: 'cve:',
+    description: 'Servicios afectados por una vulnerabilidad concreta.',
+    example: 'cve:CVE-2021-44228',
+    usage: 'Localiza hosts que Netlas identifica como vulnerables al CVE indicado (p. ej. Log4Shell).',
+    category: 'netlas-respuestas',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-ip',
+    operator: 'ip:',
+    description: 'Respuestas de una IP o rango de red.',
+    example: 'ip:200.33.14.0/24',
+    usage: 'Explora todos los servicios indexados dentro de una IP o bloque CIDR.',
+    category: 'netlas-respuestas',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-protocol',
+    operator: 'protocol:',
+    description: 'Filtra por protocolo de aplicación detectado.',
+    example: 'protocol:mqtt',
+    usage: 'Encuentra dispositivos que hablan un protocolo concreto (mqtt, ftp, ssh, smb...).',
+    category: 'netlas-respuestas',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-country',
+    operator: 'country:',
+    description: 'Filtra por país (código ISO de 2 letras).',
+    example: 'country:MX port:22',
+    usage: 'Restringe las respuestas a hosts geolocalizados en el país indicado.',
+    category: 'netlas-respuestas',
+    engine: 'netlas',
+  },
+
+  // Contenido web
+  {
+    id: 'netlas-http-title',
+    operator: 'http.title:',
+    description: 'Busca texto en el título de la página servida.',
+    example: 'http.title:"Panel de administración"',
+    usage: 'Encuentra interfaces web cuyo <title> contiene el texto indicado.',
+    category: 'netlas-web',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-http-body',
+    operator: 'http.body:',
+    description: 'Busca texto en el cuerpo HTML de la respuesta.',
+    example: 'http.body:"wp-content"',
+    usage: 'Filtra sitios cuyo HTML contiene el fragmento indicado (p. ej. instalaciones WordPress).',
+    category: 'netlas-web',
+    engine: 'netlas',
+  },
+  {
+    id: 'netlas-uri',
+    operator: 'uri:',
+    description: 'Busca respuestas cuya URL contiene una ruta concreta.',
+    example: 'uri:"/wp-login.php"',
+    usage: 'Localiza endpoints expuestos por su ruta: logins, APIs, instaladores.',
+    category: 'netlas-web',
+    engine: 'netlas',
+  },
+]
+
+const greynoiseDorks: Dork[] = [
+  // Clasificación de IPs
+  {
+    id: 'gn-classification',
+    operator: 'classification:',
+    description: 'Clasifica IPs como malicious, benign o suspicious.',
+    example: 'classification:malicious',
+    usage: 'Filtra las IPs que GreyNoise etiquetó como maliciosas por su comportamiento de escaneo.',
+    category: 'greynoise-clasificacion',
+    engine: 'greynoise',
+  },
+  {
+    id: 'gn-ip',
+    operator: 'ip:',
+    description: 'Consulta el contexto de una IP concreta.',
+    example: 'ip:185.220.101.1',
+    usage: 'Muestra si la IP fue vista escaneando Internet, su clasificación y metadatos.',
+    category: 'greynoise-clasificacion',
+    engine: 'greynoise',
+  },
+  {
+    id: 'gn-actor',
+    operator: 'actor:',
+    description: 'Filtra por actor o herramienta identificada.',
+    example: 'actor:"Shodan"',
+    usage: 'Lista las IPs atribuidas a un actor o servicio de escaneo conocido.',
+    category: 'greynoise-clasificacion',
+    engine: 'greynoise',
+  },
+  {
+    id: 'gn-tag',
+    operator: 'tags:',
+    description: 'Filtra por comportamiento observado (etiquetas).',
+    example: 'tags:"Mirai"',
+    usage: 'Encuentra IPs asociadas a botnets, escáneres web u otras conductas etiquetadas.',
+    category: 'greynoise-clasificacion',
+    engine: 'greynoise',
+  },
+
+  // Contexto y metadatos
+  {
+    id: 'gn-country',
+    operator: 'metadata.country_code:',
+    description: 'Filtra por país de origen de la IP.',
+    example: 'metadata.country_code:MX classification:malicious',
+    usage: 'Restringe el ruido observado a IPs geolocalizadas en el país indicado.',
+    category: 'greynoise-contexto',
+    engine: 'greynoise',
+  },
+  {
+    id: 'gn-organization',
+    operator: 'metadata.organization:',
+    description: 'Filtra por organización propietaria de la IP.',
+    example: 'metadata.organization:"Google"',
+    usage: 'Identifica la actividad de escaneo originada en la red de una empresa o proveedor cloud.',
+    category: 'greynoise-contexto',
+    engine: 'greynoise',
+  },
+  {
+    id: 'gn-last-seen',
+    operator: 'last_seen:',
+    description: 'Actividad observada dentro de una ventana de tiempo.',
+    example: 'last_seen:1d classification:malicious',
+    usage: 'Limita los resultados a IPs activas en el último día, semana o mes (1d, 7d, 30d).',
+    category: 'greynoise-contexto',
+    engine: 'greynoise',
+  },
+]
+
+const binaryedgeDorks: Dork[] = [
+  // Servicios y puertos
+  {
+    id: 'be-port',
+    operator: 'port:',
+    description: 'Hosts con un puerto abierto específico.',
+    example: 'port:3389',
+    usage: 'Enumera las IPs que BinaryEdge detectó con el puerto indicado accesible.',
+    category: 'binaryedge-servicios',
+    engine: 'binaryedge',
+  },
+  {
+    id: 'be-ip',
+    operator: 'ip:',
+    description: 'Información de escaneo de una IP concreta.',
+    example: 'ip:"200.33.14.5"',
+    usage: 'Muestra puertos, servicios y tecnologías detectados en la IP indicada.',
+    category: 'binaryedge-servicios',
+    engine: 'binaryedge',
+  },
+  {
+    id: 'be-country',
+    operator: 'country:',
+    description: 'Filtra resultados por país.',
+    example: 'country:"MX" port:22',
+    usage: 'Restringe los hosts al país indicado, combinable con puerto o producto.',
+    category: 'binaryedge-servicios',
+    engine: 'binaryedge',
+  },
+  {
+    id: 'be-product',
+    operator: 'product:',
+    description: 'Hosts que ejecutan un producto detectado.',
+    example: 'product:"nginx"',
+    usage: 'Encuentra servidores que corren un software concreto identificado en el banner.',
+    category: 'binaryedge-servicios',
+    engine: 'binaryedge',
+  },
+  {
+    id: 'be-service',
+    operator: 'service:',
+    description: 'Filtra por tipo de servicio.',
+    example: 'service:"vnc"',
+    usage: 'Lista hosts que exponen un servicio concreto (vnc, ssh, ftp, rdp...).',
+    category: 'binaryedge-servicios',
+    engine: 'binaryedge',
+  },
+
+  // Web y vulnerabilidades
+  {
+    id: 'be-web-title',
+    operator: 'web.title:',
+    description: 'Busca texto en el título de la página web del host.',
+    example: 'web.title:"Dashboard"',
+    usage: 'Localiza interfaces web cuyo título contiene el texto indicado.',
+    category: 'binaryedge-web',
+    engine: 'binaryedge',
+  },
+  {
+    id: 'be-cve',
+    operator: 'cve.name:',
+    description: 'Hosts potencialmente vulnerables a un CVE.',
+    example: 'cve.name:"CVE-2021-44228"',
+    usage: 'Filtra hosts cuyos servicios expuestos están asociados a la vulnerabilidad indicada.',
+    category: 'binaryedge-web',
+    engine: 'binaryedge',
+  },
+]
+
+const publicwwwDorks: Dork[] = [
+  {
+    id: 'pw-analytics',
+    operator: '"UA-"',
+    description: 'Sitios con un ID de Google Analytics.',
+    example: '"UA-12345678-1"',
+    usage: 'Encuentra todos los sitios que comparten el mismo ID de Analytics: suelen ser del mismo propietario.',
+    category: 'publicwww-codigo',
+    engine: 'publicwww',
+  },
+  {
+    id: 'pw-gtm',
+    operator: '"GTM-"',
+    description: 'Sitios con un contenedor de Google Tag Manager.',
+    example: '"GTM-ABC1234"',
+    usage: 'Relaciona dominios que cargan el mismo contenedor GTM, útil para mapear infraestructura web.',
+    category: 'publicwww-codigo',
+    engine: 'publicwww',
+  },
+  {
+    id: 'pw-iframe',
+    operator: '"<iframe"',
+    description: 'Sitios que incluyen iframes en su HTML.',
+    example: '"<iframe src=http"',
+    usage: 'Detecta inyecciones de iframes maliciosos o embeds ocultos en páginas comprometidas.',
+    category: 'publicwww-codigo',
+    engine: 'publicwww',
+  },
+  {
+    id: 'pw-minero',
+    operator: '"coinhive.min.js"',
+    description: 'Sitios con scripts de criptominería.',
+    example: '"coinhive.min.js"',
+    usage: 'Localiza páginas que cargan mineros de criptomonedas, señal de compromiso o abuso.',
+    category: 'publicwww-codigo',
+    engine: 'publicwww',
+  },
+  {
+    id: 'pw-onion',
+    operator: '".onion"',
+    description: 'Sitios que enlazan a servicios onion.',
+    example: '".onion"',
+    usage: 'Encuentra páginas de la web pública que referencian direcciones de la red Tor.',
+    category: 'publicwww-codigo',
+    engine: 'publicwww',
+  },
+  {
+    id: 'pw-wordpress',
+    operator: '"wp-content/themes/"',
+    description: 'Sitios que usan WordPress.',
+    example: '"wp-content/themes/twenty"',
+    usage: 'Identifica instalaciones WordPress y el tema que utilizan a partir del código fuente.',
+    category: 'publicwww-codigo',
+    engine: 'publicwww',
+  },
+]
+
+const searxngDorks: Dork[] = [
+  {
+    id: 'sx-site',
+    operator: 'site:',
+    description: 'Restringe la búsqueda a un dominio.',
+    example: 'site:gob.mx transparencia',
+    usage: 'Busca solo dentro del dominio indicado, combinando resultados de varios motores.',
+    category: 'searxng-operadores',
+    engine: 'searxng',
+  },
+  {
+    id: 'sx-filetype',
+    operator: 'filetype:',
+    description: 'Busca archivos de un tipo específico.',
+    example: 'filetype:pdf "presupuesto participativo"',
+    usage: 'Devuelve documentos con la extensión indicada a través del meta-buscador.',
+    category: 'searxng-operadores',
+    engine: 'searxng',
+  },
+  {
+    id: 'sx-intitle',
+    operator: 'intitle:',
+    description: 'Busca palabras en el título de la página.',
+    example: 'intitle:"aviso de privacidad"',
+    usage: 'Filtra resultados cuyo título contiene el término indicado.',
+    category: 'searxng-operadores',
+    engine: 'searxng',
+  },
+  {
+    id: 'sx-bang',
+    operator: '!motor',
+    description: 'Bangs: envía la consulta a un motor concreto.',
+    example: '!gh filename:.env',
+    usage: 'Los bangs redirigen la búsqueda: !gh GitHub, !ddg DuckDuckGo, !w Wikipedia, !yt YouTube.',
+    category: 'searxng-operadores',
+    engine: 'searxng',
+  },
+  {
+    id: 'sx-idioma',
+    operator: ':idioma',
+    description: 'Filtra resultados por idioma.',
+    example: ':es ciberseguridad',
+    usage: 'El prefijo :es, :en, :pt... restringe los resultados al idioma indicado.',
+    category: 'searxng-operadores',
+    engine: 'searxng',
+  },
+]
+
 export const dorks: Dork[] = [
   ...googleDorks.map((dork) => ({ ...dork, engine: 'google' })),
   ...bingDorks,
@@ -2361,6 +2783,11 @@ export const dorks: Dork[] = [
   ...zoomeyeDorks,
   ...crtshDorks,
   ...waybackDorks,
+  ...netlasDorks,
+  ...greynoiseDorks,
+  ...binaryedgeDorks,
+  ...publicwwwDorks,
+  ...searxngDorks,
 ]
 
 export function getEngines(): Engine[] {
@@ -2427,7 +2854,7 @@ export function buildSearchUrl(engine: Engine | string, query: string): string {
   if (resolved.id === 'fofa') {
     return resolved.urlTemplate.replace('{query}', toBase64(query))
   }
-  if (resolved.id === 'wayback') {
+  if (resolved.id === 'wayback' || resolved.id === 'publicwww') {
     return resolved.urlTemplate.replace('{query}', query)
   }
   return resolved.urlTemplate.replace('{query}', encodeURIComponent(query))

@@ -1,14 +1,15 @@
-import { getCategoriesByEngine, getDorksByEngine, getEngineById } from '../data/dorks'
+import { getCategories, getCategoriesByEngine, getDorks, getDorksByEngine, getEngineById } from '../data/dorks'
 
 interface StatsProps {
-  engineId: string
+  /** null muestra los totales de todos los motores (búsqueda global) */
+  engineId: string | null
   filteredCount: number
 }
 
 export function Stats({ engineId, filteredCount }: StatsProps) {
-  const engine = getEngineById(engineId)
-  const totalDorks = getDorksByEngine(engineId).length
-  const totalCategories = getCategoriesByEngine(engineId).length
+  const engine = engineId ? getEngineById(engineId) : undefined
+  const totalDorks = engineId ? getDorksByEngine(engineId).length : getDorks().length
+  const totalCategories = engineId ? getCategoriesByEngine(engineId).length : getCategories().length
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -26,7 +27,7 @@ export function Stats({ engineId, filteredCount }: StatsProps) {
         <div>
           <p className="text-2xl font-bold text-[var(--text-primary)]">{totalDorks}</p>
           <p className="text-sm text-[var(--text-secondary)]">
-            Dorks en {engine?.name ?? engineId}
+            {engine ? `Dorks en ${engine.name}` : 'Dorks en total'}
           </p>
         </div>
       </div>

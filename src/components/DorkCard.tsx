@@ -1,35 +1,36 @@
 import { useState } from 'react'
 import type { Dork } from '../data/dorks'
 import { buildSearchUrl, getEngineById } from '../data/dorks'
+import { copyText } from '../lib/clipboard'
 
 interface DorkCardProps {
   dork: Dork
   index: number
+  isFavorite?: boolean
+  onToggleFavorite?: (dorkId: string) => void
+  onTry?: (dork: Dork) => void
 }
 
-export function DorkCard({ dork, index }: DorkCardProps) {
+export function DorkCard({ dork, index, isFavorite = false, onToggleFavorite, onTry }: DorkCardProps) {
   const [copied, setCopied] = useState(false)
+  const [copiedOperator, setCopiedOperator] = useState(false)
   const engine = getEngineById(dork.engine)
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(dork.example)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      const textArea = document.createElement('textarea')
-      textArea.value = dork.example
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
+    await copyText(dork.example)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleCopyOperator = async () => {
+    await copyText(dork.operator)
+    setCopiedOperator(true)
+    setTimeout(() => setCopiedOperator(false), 2000)
   }
 
   const handleTry = () => {
     window.open(buildSearchUrl(dork.engine, dork.example), '_blank', 'noopener,noreferrer')
+    onTry?.(dork)
   }
 
   return (
@@ -55,9 +56,33 @@ export function DorkCard({ dork, index }: DorkCardProps) {
           </h3>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <span className="rounded-md bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-medium text-[var(--text-tertiary)]">
-            #{dork.id}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onToggleFavorite?.(dork.id)}
+              className="rounded-md p-1 transition-colors hover:bg-[var(--bg-tertiary)]"
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              aria-pressed={isFavorite}
+              title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              <svg
+                className={`h-5 w-5 ${isFavorite ? 'text-[var(--warning-500)]' : 'text-[var(--text-tertiary)]'}`}
+                fill={isFavorite ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                />
+              </svg>
+            </button>
+            <span className="rounded-md bg-[var(--bg-tertiary)] px-2 py-1 text-xs font-medium text-[var(--text-tertiary)]">
+              #{dork.id}
+            </span>
+          </div>
           {engine && (
             <span
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-white"
@@ -108,7 +133,7 @@ export function DorkCard({ dork, index }: DorkCardProps) {
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Copiado
+              ¡Copiado!
             </>
           ) : (
             <>
@@ -121,6 +146,28 @@ export function DorkCard({ dork, index }: DorkCardProps) {
                 />
               </svg>
               Copiar
+            </>
+          )}
+        </button>
+        <button
+          onClick={handleCopyOperator}
+          className="btn btn-secondary"
+          aria-label="Copiar operador"
+          title="Copiar solo el operador"
+        >
+          {copiedOperator ? (
+            '¡Copiado!'
+          ) : (
+            <>
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                />
+              </svg>
+              Operador
             </>
           )}
         </button>

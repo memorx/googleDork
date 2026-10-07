@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { DorkCard } from './DorkCard'
 import type { Dork } from '../data/dorks'
@@ -40,7 +40,37 @@ describe('DorkCard', () => {
 
   it('has a copy button', () => {
     render(<DorkCard dork={mockDork} index={0} />)
-    expect(screen.getByRole('button', { name: /copiar/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Copiar ejemplo' })).toBeTruthy()
+  })
+
+  it('copies only the operator with feedback', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+    render(<DorkCard dork={mockDork} index={0} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copiar operador' }))
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('site:'))
+    expect(await screen.findByText('¡Copiado!')).toBeTruthy()
+  })
+
+  it('has a favorite star that toggles', () => {
+    const onToggleFavorite = vi.fn()
+    render(<DorkCard dork={mockDork} index={0} isFavorite={false} onToggleFavorite={onToggleFavorite} />)
+
+    const star = screen.getByRole('button', { name: 'Agregar a favoritos' })
+    fireEvent.click(star)
+
+    expect(onToggleFavorite).toHaveBeenCalledWith('site')
+  })
+
+  it('shows the pressed state when the dork is a favorite', () => {
+    render(<DorkCard dork={mockDork} index={0} isFavorite />)
+    const star = screen.getByRole('button', { name: 'Quitar de favoritos' })
+    expect(star.getAttribute('aria-pressed')).toBe('true')
   })
 
   it('has a try button that opens Google', () => {

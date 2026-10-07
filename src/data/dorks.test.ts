@@ -26,8 +26,8 @@ describe('dorks data', () => {
     expect(getDorks()).toEqual(dorks)
   })
 
-  it('has 11 engines', () => {
-    expect(engines).toHaveLength(11)
+  it('has 16 engines', () => {
+    expect(engines).toHaveLength(16)
     expect(getEngines()).toEqual(engines)
     const ids = engines.map((engine) => engine.id)
     expect(ids).toEqual([
@@ -42,7 +42,26 @@ describe('dorks data', () => {
       'zoomeye',
       'crtsh',
       'wayback',
+      'netlas',
+      'greynoise',
+      'binaryedge',
+      'publicwww',
+      'searxng',
     ])
+  })
+
+  it('the new engines have dorks and categories', () => {
+    const expectedMinimums: Record<string, number> = {
+      netlas: 8,
+      greynoise: 6,
+      binaryedge: 6,
+      publicwww: 5,
+      searxng: 4,
+    }
+    for (const [engineId, minimum] of Object.entries(expectedMinimums)) {
+      expect(getDorksByEngine(engineId).length).toBeGreaterThanOrEqual(minimum)
+      expect(getCategoriesByEngine(engineId).length).toBeGreaterThan(0)
+    }
   })
 
   it('every dork belongs to a valid category', () => {
@@ -192,6 +211,36 @@ describe('buildSearchUrl', () => {
   it('builds a Wayback URL with the query as path (no encoding)', () => {
     expect(buildSearchUrl('wayback', 'example.com/robots.txt')).toBe(
       'https://web.archive.org/web/*/example.com/robots.txt',
+    )
+  })
+
+  it('builds a Netlas URL with encoded query', () => {
+    expect(buildSearchUrl('netlas', 'host:ejemplo.com port:443')).toBe(
+      'https://app.netlas.io/responses/?q=host%3Aejemplo.com%20port%3A443',
+    )
+  })
+
+  it('builds a GreyNoise GNQL URL with encoded query', () => {
+    expect(buildSearchUrl('greynoise', 'classification:malicious')).toBe(
+      'https://viz.greynoise.io/query?gnql=classification%3Amalicious',
+    )
+  })
+
+  it('builds a BinaryEdge URL with encoded query', () => {
+    expect(buildSearchUrl('binaryedge', 'port:3389 country:"MX"')).toBe(
+      'https://app.binaryedge.io/services/query?query=port%3A3389%20country%3A%22MX%22',
+    )
+  })
+
+  it('builds a PublicWWW URL with the query as path (no encoding)', () => {
+    expect(buildSearchUrl('publicwww', '"UA-12345678-1"')).toBe(
+      'https://publicwww.com/websites/"UA-12345678-1"/',
+    )
+  })
+
+  it('builds a SearXNG URL with encoded query', () => {
+    expect(buildSearchUrl('searxng', 'site:gob.mx transparencia')).toBe(
+      'https://searx.be/search?q=site%3Agob.mx%20transparencia',
     )
   })
 

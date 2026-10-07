@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 
 interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
+  inputRef?: RefObject<HTMLInputElement | null>
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Buscar por operador, descripción o ejemplo...' }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = 'Buscar por operador, descripción o ejemplo...', inputRef }: SearchBarProps) {
   const [inputValue, setInputValue] = useState(value)
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function SearchBar({ value, onChange, placeholder = 'Buscar por operador,
       </svg>
       <input
         id="dork-search"
+        ref={inputRef}
         type="search"
         value={inputValue}
         onChange={(e) => {
@@ -43,7 +45,14 @@ export function SearchBar({ value, onChange, placeholder = 'Buscar por operador,
         placeholder={placeholder}
         className="search-input"
         aria-label="Buscar dorks"
+        aria-keyshortcuts="/"
+        title="Atajo: / para enfocar, Escape para limpiar"
       />
+      {!inputValue && (
+        <kbd className="kbd" aria-hidden="true">
+          /
+        </kbd>
+      )}
       {inputValue && (
         <button
           type="button"

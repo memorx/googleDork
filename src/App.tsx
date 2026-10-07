@@ -1,17 +1,94 @@
-import { useMemo, useState } from 'react'
-import { getCategoriesByEngine, getDorksByEngine, searchDorks } from './data/dorks'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { Dork } from './data/dorks'
+import {
+  buildSearchUrl,
+  getCategoriesByEngine,
+  getDorksByEngine,
+  getEngineById,
+  getEngines,
+  searchDorks,
+} from './data/dorks'
 import { CategoryFilter } from './components/CategoryFilter'
+import { DorkBuilder } from './components/DorkBuilder'
 import { DorkCard } from './components/DorkCard'
 import { EmptyState } from './components/EmptyState'
 import { EngineTabs } from './components/EngineTabs'
+import { EthicsBanner } from './components/EthicsBanner'
 import { Header } from './components/Header'
+import { HistoryPanel } from './components/HistoryPanel'
+import { Recipes } from './components/Recipes'
 import { SearchBar } from './components/SearchBar'
 import { Stats } from './components/Stats'
+import { useFavorites } from './hooks/useFavorites'
+import { useHistory, type HistoryEntry } from './hooks/useHistory'
+import { buildUrlSearch, DEFAULT_ENGINE, parseUrlState } from './lib/urlState'
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [selectedEngine, setSelectedEngine] = useState('google')
+  const [searchQuery, setSearchQuery] = useState(() => parseUrlState(window.location.search).q ?? '')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    () => parseUrlState(window.location.search).cat ?? null,
+  )
+  const [selectedEngine, setSelectedEngine] = useState(() => {
+    const engine = parseUrlState(window.location.search).engine
+    return engine && getEngineById(engine) ? engine : DEFAULT_ENGINE
+  })
+  const [globalSearch, setGlobalSearch] = useState(() => parseUrlState(window.location.search).global)
+  const [showFavorites, setShowFavorites] = useState(() => parseUrlState(window.location.search).fav)
+  const [builderOpen, setBuilderOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [recipesOpen, setRecipesOpen] = useState(false)
+
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
+  const { favorites, toggleFavorite, isFavorite } = useFavorites()
+  const { entries: historyEntries, addToHistory, clearHistory } = useHistory()
+
+  // Deep links: la URL refleja el estado actual (sin recargar)
+  useEffect(() => {
+    const search = buildUrlSearch({
+      engine: selectedEngine,
+      query: searchQuery,
+      category: selectedCategory,
+      global: globalSearch,
+      fav: showFavorites,
+    })
+    window.history.replaceState(null, '', search || window.location.pathname)
+  }, [selectedEngine, searchQuery, selectedCategory, globalSearch, showFavorites])
+
+  // Atajos de teclado: "/" enfoca el buscador, flechas cambian de motor, Escape limpia
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSearchQuery('')
+        return
+      }
+      const target = event.target as HTMLElement | null
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable === true
+      if (isTyping) return
+
+      if (event.key === '/') {
+        event.preventDefault()
+        searchInputRef.current?.focus()
+        return
+      }
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        event.preventDefault()
+        const direction = event.key === 'ArrowRight' ? 1 : -1
+        setSelectedEngine((prev) => {
+          const ids = getEngines().map((engine) => engine.id)
+          const index = ids.indexOf(prev)
+          return ids[(index + direction + ids.length) % ids.length] ?? prev
+        })
+        setSelectedCategory(null)
+        setShowFavorites(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const engineCategories = useMemo(
     () => getCategoriesByEngine(selectedEngine),
@@ -30,12 +107,19 @@ function App() {
   }, [selectedEngine, engineCategories])
 
   const filteredDorks = useMemo(() => {
+    if (globalSearch) return searchDorks(searchQuery)
     return searchDorks(searchQuery, selectedCategory || undefined, selectedEngine)
-  }, [searchQuery, selectedCategory, selectedEngine])
+  }, [searchQuery, selectedCategory, selectedEngine, globalSearch])
+
+  const favoriteDorks = useMemo(() => {
+    return searchDorks(searchQuery).filter((dork) => favorites.includes(dork.id))
+  }, [searchQuery, favorites])
 
   const handleSelectEngine = (engineId: string) => {
     setSelectedEngine(engineId)
     setSelectedCategory(null)
+    setShowFavorites(false)
+    setGlobalSearch(false)
   }
 
   const handleClearFilters = () => {
@@ -43,15 +127,57 @@ function App() {
     setSelectedCategory(null)
   }
 
+  const handleTryDork = (dork: Dork) => {
+    addToHistory({ engine: dork.engine, query: dork.example })
+  }
+
+  const handleTryBuilderQuery = (engineId: string, query: string) => {
+    addToHistory({ engine: engineId, query })
+  }
+
+  const handleSelectHistoryEntry = (entry: HistoryEntry) => {
+    window.open(buildSearchUrl(entry.engine, entry.query), '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
       <Header />
+      <EthicsBanner />
 
       <main className="flex-1">
-        {/* Engine tabs */}
+        {/* Engine tabs + favoritos */}
         <section className="border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            <EngineTabs selectedEngine={selectedEngine} onSelectEngine={handleSelectEngine} />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <EngineTabs selectedEngine={selectedEngine} onSelectEngine={handleSelectEngine} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFavorites((prev) => !prev)}
+                className={`category-pill shrink-0 ${showFavorites ? 'active' : ''}`}
+                aria-pressed={showFavorites}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill={showFavorites ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  />
+                </svg>
+                Favoritos
+                <span className="rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
+                  {favorites.length}
+                </span>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -68,60 +194,231 @@ function App() {
                 <span className="gradient-text">búsquedas avanzadas</span>
               </h2>
               <p className="mx-auto max-w-2xl text-lg text-[var(--text-secondary)]">
-                Colección completa de dorks para 11 motores: Google, Bing, DuckDuckGo, Yandex,
-                Shodan, Censys, GitHub, FOFA, ZoomEye, crt.sh y Wayback Machine. Buscá, filtrá,
-                copiá y probá cada operador directamente.
+                Colección completa de dorks para 16 motores: Google, Bing, DuckDuckGo, Yandex,
+                Shodan, Censys, GitHub, FOFA, ZoomEye, crt.sh, Wayback Machine, Netlas, GreyNoise,
+                BinaryEdge, PublicWWW y SearXNG. Buscá, filtrá, copiá y probá cada operador
+                directamente.
               </p>
             </div>
 
             <div className="mx-auto mt-8 max-w-3xl">
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <SearchBar value={searchQuery} onChange={setSearchQuery} inputRef={searchInputRef} />
+              {!showFavorites && (
+                <label className="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm text-[var(--text-secondary)]">
+                  <input
+                    type="checkbox"
+                    checked={globalSearch}
+                    onChange={(e) => {
+                      setGlobalSearch(e.target.checked)
+                      if (e.target.checked) setSelectedCategory(null)
+                    }}
+                    className="h-4 w-4 accent-[var(--accent-500)]"
+                  />
+                  Buscar en todos los motores
+                </label>
+              )}
             </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setBuilderOpen((prev) => !prev)
+                  setHistoryOpen(false)
+                  setRecipesOpen(false)
+                }}
+                className="btn btn-secondary"
+                aria-expanded={builderOpen}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                  />
+                </svg>
+                Constructor de dorks
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRecipesOpen((prev) => !prev)
+                  setBuilderOpen(false)
+                  setHistoryOpen(false)
+                }}
+                className="btn btn-secondary"
+                aria-expanded={recipesOpen}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+                Recetas
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setHistoryOpen((prev) => !prev)
+                  setBuilderOpen(false)
+                  setRecipesOpen(false)
+                }}
+                className="btn btn-secondary"
+                aria-expanded={historyOpen}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Historial
+                {historyEntries.length > 0 && (
+                  <span className="rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
+                    {historyEntries.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {builderOpen && (
+              <div className="mx-auto mt-6 max-w-3xl">
+                <DorkBuilder initialEngine={selectedEngine} onTry={handleTryBuilderQuery} />
+              </div>
+            )}
+            {recipesOpen && (
+              <div className="mx-auto mt-6 max-w-5xl">
+                <Recipes onTry={handleTryBuilderQuery} />
+              </div>
+            )}
+            {historyOpen && (
+              <div className="mx-auto mt-6 max-w-3xl">
+                <HistoryPanel
+                  entries={historyEntries}
+                  onSelect={handleSelectHistoryEntry}
+                  onClear={clearHistory}
+                />
+              </div>
+            )}
           </div>
         </section>
 
         {/* Content */}
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <Stats engineId={selectedEngine} filteredCount={filteredDorks.length} />
-          </div>
-
-          <div className="mb-8">
-            <CategoryFilter
-              categories={engineCategories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              counts={counts}
-            />
-          </div>
-
-          {filteredDorks.length === 0 ? (
-            <EmptyState onClear={handleClearFilters} />
+          {showFavorites ? (
+            <div>
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                  Tus favoritos{' '}
+                  <span className="text-[var(--text-secondary)]">({favoriteDorks.length})</span>
+                </h2>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  Dorks guardados de todos los motores.
+                </p>
+              </div>
+              {favoriteDorks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--bg-card)] p-12 text-center">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--warning-50)] text-[var(--warning-500)]">
+                    <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="mb-2 text-xl font-semibold text-[var(--text-primary)]">
+                    Aún no tenés favoritos
+                  </h3>
+                  <p className="max-w-md text-[var(--text-secondary)]">
+                    Tocá la estrella de cualquier dork para guardarlo acá.
+                  </p>
+                </div>
+              ) : (
+                <section
+                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                  aria-label="Dorks favoritos"
+                >
+                  {favoriteDorks.map((dork, index) => (
+                    <DorkCard
+                      key={dork.id}
+                      dork={dork}
+                      index={index}
+                      isFavorite={isFavorite(dork.id)}
+                      onToggleFavorite={toggleFavorite}
+                      onTry={handleTryDork}
+                    />
+                  ))}
+                </section>
+              )}
+            </div>
           ) : (
             <>
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm text-[var(--text-secondary)]">
-                  Mostrando <span className="font-semibold text-[var(--text-primary)]">{filteredDorks.length}</span>{' '}
-                  {filteredDorks.length === 1 ? 'dork' : 'dorks'}
-                </p>
-                {(searchQuery || selectedCategory) && (
-                  <button
-                    onClick={handleClearFilters}
-                    className="text-sm font-medium text-[var(--accent-600)] hover:text-[var(--accent-700)]"
-                  >
-                    Limpiar filtros
-                  </button>
-                )}
+              <div className="mb-8">
+                <Stats
+                  engineId={globalSearch ? null : selectedEngine}
+                  filteredCount={filteredDorks.length}
+                />
               </div>
 
-              <section
-                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                aria-label="Listado de dorks"
-              >
-                {filteredDorks.map((dork, index) => (
-                  <DorkCard key={dork.id} dork={dork} index={index} />
-                ))}
-              </section>
+              {!globalSearch && (
+                <div className="mb-8">
+                  <CategoryFilter
+                    categories={engineCategories}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                    counts={counts}
+                  />
+                </div>
+              )}
+
+              {filteredDorks.length === 0 ? (
+                <EmptyState onClear={handleClearFilters} />
+              ) : (
+                <>
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      Mostrando{' '}
+                      <span className="font-semibold text-[var(--text-primary)]">
+                        {filteredDorks.length}
+                      </span>{' '}
+                      {filteredDorks.length === 1 ? 'dork' : 'dorks'}
+                      {globalSearch && ' en todos los motores'}
+                    </p>
+                    {(searchQuery || selectedCategory) && (
+                      <button
+                        onClick={handleClearFilters}
+                        className="text-sm font-medium text-[var(--accent-600)] hover:text-[var(--accent-700)]"
+                      >
+                        Limpiar filtros
+                      </button>
+                    )}
+                  </div>
+
+                  <section
+                    className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                    aria-label="Listado de dorks"
+                  >
+                    {filteredDorks.map((dork, index) => (
+                      <DorkCard
+                        key={dork.id}
+                        dork={dork}
+                        index={index}
+                        isFavorite={isFavorite(dork.id)}
+                        onToggleFavorite={toggleFavorite}
+                        onTry={handleTryDork}
+                      />
+                    ))}
+                  </section>
+                </>
+              )}
             </>
           )}
         </section>
