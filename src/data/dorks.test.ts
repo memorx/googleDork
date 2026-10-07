@@ -117,6 +117,24 @@ describe('dorks data', () => {
     }
   })
 
+  it('the dark-side categories exist, are sensitive and have enough dorks', () => {
+    const darkCategories = [
+      'credentials',
+      'tokens-keys',
+      'network-vpn',
+      'databases',
+      'cameras-private',
+      'critical-infra',
+      'webmail',
+    ]
+    for (const id of darkCategories) {
+      const category = getCategoriesByEngine('google').find((c) => c.id === id)
+      expect(category, `categoría ${id}`).toBeTruthy()
+      expect(category!.sensitive).toBe(true)
+      expect(getDorksByCategory(id).length).toBeGreaterThanOrEqual(6)
+    }
+  })
+
   it('every category has at least one dork', () => {
     for (const category of categories) {
       expect(getDorksByCategory(category.id).length).toBeGreaterThan(0)
@@ -132,7 +150,7 @@ describe('dorks data', () => {
 
   it('getCategoriesByEngine returns only categories of that engine', () => {
     const googleCategories = getCategoriesByEngine('google')
-    expect(googleCategories).toHaveLength(21)
+    expect(googleCategories).toHaveLength(28)
     for (const category of googleCategories) {
       expect(category.engineId).toBe('google')
     }

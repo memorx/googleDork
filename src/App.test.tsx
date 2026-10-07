@@ -95,15 +95,15 @@ describe('App', () => {
   it('global search finds dorks across all engines', () => {
     render(<App />)
     const searchInput = screen.getByLabelText('Buscar dorks')
-    fireEvent.change(searchInput, { target: { value: 'mongodb' } })
+    fireEvent.change(searchInput, { target: { value: 'cassandra' } })
 
-    // "mongodb" solo existe en Shodan: dentro de Google no hay resultados
+    // "cassandra" solo existe en Shodan: dentro de Google no hay resultados
     expect(screen.queryAllByTestId('dork-card')).toHaveLength(0)
 
     fireEvent.click(screen.getByLabelText('Buscar en todos los motores'))
 
     const cards = screen.getAllByTestId('dork-card')
-    expect(cards.length).toBe(searchDorks('mongodb').length)
+    expect(cards.length).toBe(searchDorks('cassandra').length)
     expect(cards.length).toBeGreaterThan(0)
     expect(screen.getByText('Shodan', { selector: 'span' })).toBeTruthy()
     expect(screen.getByText('Dorks en total')).toBeTruthy()

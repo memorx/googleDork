@@ -3,9 +3,9 @@ import { engines, buildSearchUrl } from './dorks'
 import { getRecipeById, getRecipes, recipes } from './recipes'
 
 describe('recipes data', () => {
-  it('has between 12 and 20 recipes', () => {
+  it('has between 12 and 28 recipes', () => {
     expect(recipes.length).toBeGreaterThanOrEqual(12)
-    expect(recipes.length).toBeLessThanOrEqual(20)
+    expect(recipes.length).toBeLessThanOrEqual(28)
   })
 
   it('every recipe has required fields', () => {
@@ -38,6 +38,25 @@ describe('recipes data', () => {
     for (const recipe of recipes) {
       expect(() => buildSearchUrl(recipe.engine, recipe.query)).not.toThrow()
       expect(buildSearchUrl(recipe.engine, recipe.query)).toMatch(/^https:\/\//)
+    }
+  })
+
+  it('the new dark-side recipes exist, are sensitive and well formed', () => {
+    const newRecipes: Array<{ id: string; engine: string }> = [
+      { id: 'camaras-hikvision', engine: 'google' },
+      { id: 'tokens-slack-github', engine: 'github' },
+      { id: 'vpn-openvpn-configs', engine: 'google' },
+      { id: 'elasticsearch-abiertos', engine: 'shodan' },
+      { id: 'redis-sin-password', engine: 'shodan' },
+      { id: 'webmails-empresa', engine: 'google' },
+    ]
+    for (const { id, engine } of newRecipes) {
+      const recipe = getRecipeById(id)
+      expect(recipe, `receta ${id}`).toBeTruthy()
+      expect(recipe!.engine).toBe(engine)
+      expect(recipe!.sensitive).toBe(true)
+      expect(recipe!.steps.length).toBeGreaterThanOrEqual(3)
+      expect(() => buildSearchUrl(recipe!.engine, recipe!.query)).not.toThrow()
     }
   })
 
