@@ -39,10 +39,26 @@ export function useHistory() {
     })
   }, [])
 
+  const importHistory = useCallback(
+    (incoming: HistoryEntry[]): number => {
+      const valid = incoming.filter(isHistoryEntry)
+      const added = valid.filter(
+        (entry) => !entries.some((item) => item.engine === entry.engine && item.query === entry.query),
+      ).length
+      const next = [...entries, ...valid.filter(
+        (entry) => !entries.some((item) => item.engine === entry.engine && item.query === entry.query),
+      )].slice(0, HISTORY_LIMIT)
+      setEntries(next)
+      writeJson(HISTORY_KEY, next)
+      return added
+    },
+    [entries],
+  )
+
   const clearHistory = useCallback(() => {
     writeJson(HISTORY_KEY, [])
     setEntries([])
   }, [])
 
-  return { entries, addToHistory, clearHistory }
+  return { entries, addToHistory, importHistory, clearHistory }
 }

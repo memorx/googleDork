@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { buildSearchUrl, getDorksByEngine, searchDorks } from './data/dorks'
@@ -214,8 +214,7 @@ describe('App', () => {
     ).toBeGreaterThan(0)
   })
 
-  it('opens the recipes panel and lists recipes with copy and try buttons', () => {
-    render(<App />)
+  it('opens the recipes panel and lists recipes with copy and try buttons', () => {    render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Recetas' }))
 
     const panel = screen.getByTestId('recipes-panel')
@@ -247,5 +246,80 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: /^historial/i }))
     expect(screen.getAllByRole('button', { name: /re-ejecutar búsqueda/i })).toHaveLength(1)
     openSpy.mockRestore()
+  })
+
+  it('opens the recon panel and generates queries for a valid domain', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    } as unknown as Response)
+    vi.stubGlobal('fetch', fetchMock)
+    try {
+      render(<App />)
+      fireEvent.click(screen.getByRole('button', { name: /recon de objetivo/i }))
+
+      const input = screen.getByLabelText('Dominio objetivo')
+      fireEvent.change(input, { target: { value: 'not a domain!!' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Analizar' }))
+      expect(screen.getByRole('alert').textContent).toContain('dominio válido')
+
+      fireEvent.change(input, { target: { value: 'example.com' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Analizar' }))
+
+      expect(await screen.findByText('site:example.com filetype:pdf')).toBeTruthy()
+      expect(screen.getByText('hostname:example.com')).toBeTruthy()
+      expect(screen.getByText('"example.com" filename:.env')).toBeTruthy()
+      expect(
+        screen.getByRole('button', { name: /exportar kit de auditoría/i }),
+      ).toBeTruthy()
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('opens and closes the command palette with Ctrl+K', () => {
+    render(<App />)
+    expect(screen.queryByTestId('command-palette')).toBeNull()
+
+    fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
+    expect(screen.getByTestId('command-palette')).toBeTruthy()
+
+    const input = screen.getByLabelText('Buscar en la paleta de comandos')
+    fireEvent.keyDown(input, { key: 'Escape' })
+    expect(screen.queryByTestId('command-palette')).toBeNull()
+  })
+
+  it('does not toggle the palette with Ctrl+K while typing in an input', () => {
+    render(<App />)
+    const searchInput = screen.getByLabelText('Buscar dorks')
+    searchInput.focus()
+    fireEvent.keyDown(searchInput, { key: 'k', ctrlKey: true })
+    expect(screen.queryByTestId('command-palette')).toBeNull()
+  })
+
+  it('opens the playbooks panel and checks a step', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Playbooks' }))
+    const panel = screen.getByTestId('playbooks-panel')
+    expect(panel).toBeTruthy()
+    expect(within(panel).getAllByTestId('playbook-card')).toHaveLength(4)
+
+    fireEvent.click(within(panel).getByText('Recon de dominio completo'))
+    fireEvent.click(within(panel).getAllByRole('checkbox')[0])
+    expect(within(panel).getByText('1/7')).toBeTruthy()
+  })
+
+  it('shows export and import controls in the history panel', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /^historial/i }))
+    expect(screen.getByRole('button', { name: /exportar favoritos e historial/i })).toBeTruthy()
+    expect(screen.getByLabelText(/importar favoritos e historial/i)).toBeTruthy()
+  })
+
+  it('opens the resources panel from the footer link', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Recursos OSINT' }))
+    expect(screen.getByTestId('resources-panel')).toBeTruthy()
+    expect(screen.getAllByTestId('resource-card').length).toBeGreaterThanOrEqual(8)
   })
 })

@@ -19,7 +19,19 @@ export function useFavorites() {
     })
   }, [])
 
+  const importFavorites = useCallback(
+    (ids: string[]): number => {
+      const clean = ids.filter((id): id is string => typeof id === 'string')
+      const added = clean.filter((id) => !favorites.includes(id)).length
+      const next = [...favorites, ...clean.filter((id) => !favorites.includes(id))]
+      setFavorites(next)
+      writeJson(FAVORITES_KEY, next)
+      return added
+    },
+    [favorites],
+  )
+
   const isFavorite = useCallback((dorkId: string) => favorites.includes(dorkId), [favorites])
 
-  return { favorites, toggleFavorite, isFavorite }
+  return { favorites, toggleFavorite, importFavorites, isFavorite }
 }

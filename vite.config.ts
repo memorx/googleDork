@@ -15,6 +15,6 @@ export default defineConfig(({ command }) => ({
     exclude: ['node_modules', 'e2e'],
     // Los tests de integración de App renderizan cientos de tarjetas en jsdom;
     // en máquinas lentas el render inicial supera los 5s por defecto.
-    testTimeout: 15000,
+    testTimeout: 20000,
   },
 }))

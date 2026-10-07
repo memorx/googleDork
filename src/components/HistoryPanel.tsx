@@ -5,6 +5,9 @@ interface HistoryPanelProps {
   entries: HistoryEntry[]
   onSelect: (entry: HistoryEntry) => void
   onClear: () => void
+  onExport?: () => void
+  onImport?: (json: string) => void
+  importFeedback?: string | null
 }
 
 function formatTime(timestamp: number): string {
@@ -14,7 +17,14 @@ function formatTime(timestamp: number): string {
   })
 }
 
-export function HistoryPanel({ entries, onSelect, onClear }: HistoryPanelProps) {
+export function HistoryPanel({ entries, onSelect, onClear, onExport, onImport, importFeedback }: HistoryPanelProps) {
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !onImport) return
+    onImport(await file.text())
+  }
+
   return (
     <div className="dork-card" data-testid="history-panel">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -64,6 +74,56 @@ export function HistoryPanel({ entries, onSelect, onClear }: HistoryPanelProps) 
             )
           })}
         </ul>
+      )}
+
+      {(onExport || onImport) && (
+        <div className="mt-4 border-t border-[var(--border-color)] pt-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {onExport && (
+              <button
+                type="button"
+                onClick={onExport}
+                className="btn btn-secondary"
+                aria-label="Exportar favoritos e historial"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4"
+                  />
+                </svg>
+                Exportar
+              </button>
+            )}
+            {onImport && (
+              <label className="btn btn-secondary cursor-pointer">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 16V4m0 0L8 8m4-4l4 4"
+                  />
+                </svg>
+                Importar
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={handleImportFile}
+                  aria-label="Importar favoritos e historial"
+                />
+              </label>
+            )}
+          </div>
+          {importFeedback && (
+            <p className="mt-2 text-sm text-[var(--text-secondary)]" role="status">
+              {importFeedback}
+            </p>
+          )}
+        </div>
       )}
     </div>
   )

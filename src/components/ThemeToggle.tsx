@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 
 export type Theme = 'light' | 'dark' | 'hacker'
 
+/** Evento global para cambiar de tema desde fuera del toggle (p. ej. la paleta de comandos). */
+export const CYCLE_THEME_EVENT = 'googledork:cycle-theme'
+
 const THEME_ORDER: Theme[] = ['light', 'dark', 'hacker']
 
 const THEME_LABELS: Record<Theme, string> = {
@@ -24,6 +27,13 @@ export function ThemeToggle() {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('googledork-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const handleCycle = () =>
+      setTheme((prev) => THEME_ORDER[(THEME_ORDER.indexOf(prev) + 1) % THEME_ORDER.length])
+    window.addEventListener(CYCLE_THEME_EVENT, handleCycle)
+    return () => window.removeEventListener(CYCLE_THEME_EVENT, handleCycle)
+  }, [])
 
   const nextTheme = THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length]
 

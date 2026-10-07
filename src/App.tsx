@@ -9,6 +9,7 @@ import {
   searchDorks,
 } from './data/dorks'
 import { CategoryFilter } from './components/CategoryFilter'
+import { CommandPalette, type PalettePanel } from './components/CommandPalette'
 import { DorkBuilder } from './components/DorkBuilder'
 import { DorkCard } from './components/DorkCard'
 import { EmptyState } from './components/EmptyState'
@@ -16,11 +17,17 @@ import { EngineTabs } from './components/EngineTabs'
 import { EthicsBanner } from './components/EthicsBanner'
 import { Header } from './components/Header'
 import { HistoryPanel } from './components/HistoryPanel'
+import { Playbooks } from './components/Playbooks'
+import { ReconPanel } from './components/ReconPanel'
 import { Recipes } from './components/Recipes'
+import { Resources } from './components/Resources'
 import { SearchBar } from './components/SearchBar'
 import { Stats } from './components/Stats'
+import { CYCLE_THEME_EVENT } from './components/ThemeToggle'
 import { useFavorites } from './hooks/useFavorites'
 import { useHistory, type HistoryEntry } from './hooks/useHistory'
+import { buildBackup, parseBackup } from './lib/dataTransfer'
+import { downloadTextFile } from './lib/download'
 import { buildUrlSearch, DEFAULT_ENGINE, parseUrlState } from './lib/urlState'
 
 function App() {
@@ -34,13 +41,13 @@ function App() {
   })
   const [globalSearch, setGlobalSearch] = useState(() => parseUrlState(window.location.search).global)
   const [showFavorites, setShowFavorites] = useState(() => parseUrlState(window.location.search).fav)
-  const [builderOpen, setBuilderOpen] = useState(false)
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const [recipesOpen, setRecipesOpen] = useState(false)
+  const [openPanel, setOpenPanel] = useState<PalettePanel | null>(null)
+  const [paletteOpen, setPaletteOpen] = useState(false)
+  const [importFeedback, setImportFeedback] = useState<string | null>(null)
 
   const searchInputRef = useRef<HTMLInputElement | null>(null)
-  const { favorites, toggleFavorite, isFavorite } = useFavorites()
-  const { entries: historyEntries, addToHistory, clearHistory } = useHistory()
+  const { favorites, toggleFavorite, importFavorites, isFavorite } = useFavorites()
+  const { entries: historyEntries, addToHistory, importHistory, clearHistory } = useHistory()
 
   // Deep links: la URL refleja el estado actual (sin recargar)
   useEffect(() => {
@@ -54,7 +61,8 @@ function App() {
     window.history.replaceState(null, '', search || window.location.pathname)
   }, [selectedEngine, searchQuery, selectedCategory, globalSearch, showFavorites])
 
-  // Atajos de teclado: "/" enfoca el buscador, flechas cambian de motor, Escape limpia
+  // Atajos de teclado: Ctrl+K abre la paleta, "/" enfoca el buscador,
+  // flechas cambian de motor, Escape limpia
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -68,6 +76,12 @@ function App() {
         target instanceof HTMLSelectElement ||
         target?.isContentEditable === true
       if (isTyping) return
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setPaletteOpen((prev) => !prev)
+        return
+      }
 
       if (event.key === '/') {
         event.preventDefault()
@@ -139,9 +153,45 @@ function App() {
     window.open(buildSearchUrl(entry.engine, entry.query), '_blank', 'noopener,noreferrer')
   }
 
+  const togglePanel = (panel: PalettePanel) => {
+    setOpenPanel((prev) => (prev === panel ? null : panel))
+  }
+
+  const handleOpenPanel = (panel: PalettePanel) => {
+    setOpenPanel(panel)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleShowFavorites = () => {
+    setShowFavorites(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleCycleTheme = () => {
+    window.dispatchEvent(new Event(CYCLE_THEME_EVENT))
+  }
+
+  const handleExportData = () => {
+    const today = new Date().toISOString().slice(0, 10)
+    downloadTextFile(`googledork-backup-${today}.json`, buildBackup(favorites, historyEntries), 'application/json')
+  }
+
+  const handleImportData = (json: string) => {
+    const data = parseBackup(json)
+    if (!data) {
+      setImportFeedback('El archivo no es un respaldo válido de GoogleDork.')
+      return
+    }
+    const addedFavorites = importFavorites(data.favorites)
+    const addedHistory = importHistory(data.history)
+    setImportFeedback(
+      `Importación lista: ${addedFavorites} favorito(s) y ${addedHistory} búsqueda(s) nuevas.`,
+    )
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
-      <Header />
+      <Header onOpenPalette={() => setPaletteOpen(true)} />
       <EthicsBanner />
 
       <main className="flex-1">
@@ -222,13 +272,9 @@ function App() {
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setBuilderOpen((prev) => !prev)
-                  setHistoryOpen(false)
-                  setRecipesOpen(false)
-                }}
+                onClick={() => togglePanel('builder')}
                 className="btn btn-secondary"
-                aria-expanded={builderOpen}
+                aria-expanded={openPanel === 'builder'}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -242,13 +288,9 @@ function App() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setRecipesOpen((prev) => !prev)
-                  setBuilderOpen(false)
-                  setHistoryOpen(false)
-                }}
+                onClick={() => togglePanel('recipes')}
                 className="btn btn-secondary"
-                aria-expanded={recipesOpen}
+                aria-expanded={openPanel === 'recipes'}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -262,13 +304,41 @@ function App() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setHistoryOpen((prev) => !prev)
-                  setBuilderOpen(false)
-                  setRecipesOpen(false)
-                }}
+                onClick={() => togglePanel('recon')}
                 className="btn btn-secondary"
-                aria-expanded={historyOpen}
+                aria-expanded={openPanel === 'recon'}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3.75 12a8.25 8.25 0 1116.5 0 8.25 8.25 0 01-16.5 0zM12 8.25v3.75m0 0v3.75m0-3.75h3.75m-3.75 0H8.25"
+                  />
+                </svg>
+                Recon de objetivo
+              </button>
+              <button
+                type="button"
+                onClick={() => togglePanel('playbooks')}
+                className="btn btn-secondary"
+                aria-expanded={openPanel === 'playbooks'}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6M9 8h6M5 3h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z"
+                  />
+                </svg>
+                Playbooks
+              </button>
+              <button
+                type="button"
+                onClick={() => togglePanel('history')}
+                className="btn btn-secondary"
+                aria-expanded={openPanel === 'history'}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -287,22 +357,40 @@ function App() {
               </button>
             </div>
 
-            {builderOpen && (
+            {openPanel === 'builder' && (
               <div className="mx-auto mt-6 max-w-3xl">
                 <DorkBuilder initialEngine={selectedEngine} onTry={handleTryBuilderQuery} />
               </div>
             )}
-            {recipesOpen && (
+            {openPanel === 'recipes' && (
               <div className="mx-auto mt-6 max-w-5xl">
                 <Recipes onTry={handleTryBuilderQuery} />
               </div>
             )}
-            {historyOpen && (
+            {openPanel === 'recon' && (
+              <div className="mx-auto mt-6 max-w-4xl">
+                <ReconPanel />
+              </div>
+            )}
+            {openPanel === 'playbooks' && (
+              <div className="mx-auto mt-6 max-w-4xl">
+                <Playbooks onTry={handleTryBuilderQuery} onSelectEngine={handleSelectEngine} />
+              </div>
+            )}
+            {openPanel === 'resources' && (
+              <div className="mx-auto mt-6 max-w-5xl">
+                <Resources />
+              </div>
+            )}
+            {openPanel === 'history' && (
               <div className="mx-auto mt-6 max-w-3xl">
                 <HistoryPanel
                   entries={historyEntries}
                   onSelect={handleSelectHistoryEntry}
                   onClear={clearHistory}
+                  onExport={handleExportData}
+                  onImport={handleImportData}
+                  importFeedback={importFeedback}
                 />
               </div>
             )}
@@ -429,11 +517,28 @@ function App() {
           <p className="mb-2 text-sm text-[var(--text-secondary)]">
             GoogleDork — Herramienta educativa multi-motor para seguridad informática.
           </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
+          <p className="mb-3 text-xs text-[var(--text-tertiary)]">
             Usá estos dorks únicamente en sistemas propios o con autorización explícita.
           </p>
+          <button
+            type="button"
+            onClick={() => handleOpenPanel('resources')}
+            className="text-sm font-medium text-[var(--accent-600)] hover:text-[var(--accent-700)] hover:underline"
+          >
+            Recursos OSINT
+          </button>
         </div>
       </footer>
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onSelectEngine={handleSelectEngine}
+        onOpenPanel={handleOpenPanel}
+        onShowFavorites={handleShowFavorites}
+        onCycleTheme={handleCycleTheme}
+        onTryDork={handleTryDork}
+      />
     </div>
   )
 }

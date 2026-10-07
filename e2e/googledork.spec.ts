@@ -158,4 +158,89 @@ test.describe('GoogleDork app', () => {
     await expect(newPage).toHaveURL(/google\.com/)
     await newPage.close()
   })
+
+  test('command palette opens with Ctrl+K and closes with Escape', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByTestId('dork-card').first()).toBeVisible()
+
+    await page.keyboard.press('Control+k')
+    await expect(page.getByTestId('command-palette')).toBeVisible()
+
+    await page.getByLabel('Buscar en la paleta de comandos').fill('shodan')
+    await expect(page.getByRole('option').first()).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(page.getByTestId('command-palette')).toBeHidden()
+  })
+
+  test('recon panel generates queries for a domain and shows live data', async ({ page }) => {
+    // Mock de las fuentes en vivo para no depender de la red en CI
+    await page.route('**/crt.sh/**', (route) =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify([
+          { name_value: 'www.example.com\nmail.example.com' },
+          { name_value: 'www.example.com' },
+        ]),
+      }),
+    )
+    await page.route('**/dns.google/**', (route) => {
+      const type = new URL(route.request().url()).searchParams.get('type')
+      const data =
+        type === 'A'
+          ? '93.184.216.34'
+          : type === 'MX'
+            ? '10 mx.ejemplo.net'
+            : type === 'TXT'
+              ? 'v=spf1 include:_spf.ejemplo.net ~all'
+              : 'ns1.ejemplo.net'
+      return route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          Status: 0,
+          Answer: [{ name: 'example.com', type: 1, data }],
+        }),
+      })
+    })
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Recon de objetivo' }).click()
+    await page.getByLabel('Dominio objetivo').fill('example.com')
+    await page.getByRole('button', { name: 'Analizar' }).click()
+
+    await expect(page.getByText('site:example.com filetype:pdf', { exact: true })).toBeVisible()
+    await expect(page.getByText('hostname:example.com', { exact: true })).toBeVisible()
+    await expect(page.getByText('"example.com" filename:.env', { exact: true })).toBeVisible()
+    await expect(page.getByText('2 subdominios')).toBeVisible()
+    await expect(page.getByText('mail.example.com', { exact: true })).toBeVisible()
+    await expect(page.getByText('93.184.216.34', { exact: true })).toBeVisible()
+  })
+
+  test('recon panel validates the domain input', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Recon de objetivo' }).click()
+    await page.getByLabel('Dominio objetivo').fill('no es un dominio')
+    await page.getByRole('button', { name: 'Analizar' }).click()
+    await expect(page.getByRole('alert')).toContainText('dominio válido')
+  })
+
+  test('playbooks panel tracks progress with checkboxes', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Playbooks', exact: true }).click()
+    await expect(page.getByTestId('playbook-card')).toHaveCount(4)
+
+    const panel = page.getByTestId('playbooks-panel')
+    await panel.getByText('Recon de dominio completo').click()
+    await panel.getByRole('checkbox').first().check()
+    await expect(panel.getByText('1/7')).toBeVisible()
+  })
+
+  test('resources panel lists curated OSINT links', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Recursos OSINT' }).click()
+    await expect(page.getByTestId('resources-panel')).toBeVisible()
+    expect(await page.getByTestId('resource-card').count()).toBeGreaterThanOrEqual(8)
+    const ghdb = page.getByRole('link', { name: /Google Hacking Database/i })
+    await expect(ghdb).toHaveAttribute('rel', 'noopener noreferrer')
+  })
 })
