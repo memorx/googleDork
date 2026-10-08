@@ -3,7 +3,7 @@ import { getRecipes } from '../data/recipes'
 
 // Elementos buscables de la paleta de comandos: acciones, motores, recetas y dorks.
 
-export type PalettePanel = 'builder' | 'recipes' | 'history' | 'recon' | 'playbooks' | 'resources'
+export type PalettePanel = 'builder' | 'recipes' | 'history' | 'recon' | 'playbooks' | 'resources' | 'workspace'
 
 export type PaletteItem =
   | { kind: 'action'; id: string; title: string; subtitle: string; action: PalettePanel | 'favorites' | 'theme' }
@@ -16,6 +16,7 @@ export const PALETTE_ACTIONS: PaletteItem[] = [
   { kind: 'action', id: 'action-recipes', title: 'Abrir Recetas', subtitle: 'Acción', action: 'recipes' },
   { kind: 'action', id: 'action-history', title: 'Abrir Historial', subtitle: 'Acción', action: 'history' },
   { kind: 'action', id: 'action-recon', title: 'Abrir Recon de objetivo', subtitle: 'Acción', action: 'recon' },
+  { kind: 'action', id: 'action-workspace', title: 'Abrir Workspace de auditoría', subtitle: 'Acción', action: 'workspace' },
   { kind: 'action', id: 'action-playbooks', title: 'Abrir Playbooks OSINT', subtitle: 'Acción', action: 'playbooks' },
   { kind: 'action', id: 'action-resources', title: 'Abrir Recursos OSINT', subtitle: 'Acción', action: 'resources' },
   { kind: 'action', id: 'action-favorites', title: 'Ir a Favoritos', subtitle: 'Acción', action: 'favorites' },

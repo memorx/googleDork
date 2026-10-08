@@ -22,12 +22,17 @@ import { ReconPanel } from './components/ReconPanel'
 import { Recipes } from './components/Recipes'
 import { Resources } from './components/Resources'
 import { SearchBar } from './components/SearchBar'
+import { SharedReconView } from './components/SharedReconView'
 import { Stats } from './components/Stats'
+import { Workspace } from './components/Workspace'
 import { CYCLE_THEME_EVENT } from './components/ThemeToggle'
 import { useFavorites } from './hooks/useFavorites'
 import { useHistory, type HistoryEntry } from './hooks/useHistory'
+import { useWorkspace } from './hooks/useWorkspace'
 import { buildBackup, parseBackup } from './lib/dataTransfer'
 import { downloadTextFile } from './lib/download'
+import { dnsRecordsToMap, type ReconSnapshot } from './lib/reconDiff'
+import { decodeReconShare, RECON_HASH_PREFIX, type SharedRecon } from './lib/shareLink'
 import { buildUrlSearch, DEFAULT_ENGINE, parseUrlState } from './lib/urlState'
 
 function App() {
@@ -44,10 +49,38 @@ function App() {
   const [openPanel, setOpenPanel] = useState<PalettePanel | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [importFeedback, setImportFeedback] = useState<string | null>(null)
+  const [reconDomain, setReconDomain] = useState<string | null>(null)
+  const [sharedRecon, setSharedRecon] = useState<SharedRecon | null>(null)
+  const [sharedReconError, setSharedReconError] = useState<string | null>(null)
+  const [sharedSaved, setSharedSaved] = useState(false)
 
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const { favorites, toggleFavorite, importFavorites, isFavorite } = useFavorites()
   const { entries: historyEntries, addToHistory, importHistory, clearHistory } = useHistory()
+  const workspace = useWorkspace()
+
+  // Recon compartido por enlace: #recon=... en el hash
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash.startsWith(RECON_HASH_PREFIX)) return
+    let cancelled = false
+    decodeReconShare(hash)
+      .then((recon) => {
+        if (cancelled) return
+        if (recon) {
+          setSharedRecon(recon)
+          window.scrollTo({ top: 0 })
+        } else {
+          setSharedReconError('El enlace de recon compartido está corrupto o incompleto.')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSharedReconError('El enlace de recon compartido está corrupto o incompleto.')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Deep links: la URL refleja el estado actual (sin recargar)
   useEffect(() => {
@@ -158,6 +191,7 @@ function App() {
   }
 
   const handleOpenPanel = (panel: PalettePanel) => {
+    if (panel === 'recon') setReconDomain(null)
     setOpenPanel(panel)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -169,6 +203,53 @@ function App() {
 
   const handleCycleTheme = () => {
     window.dispatchEvent(new Event(CYCLE_THEME_EVENT))
+  }
+
+  const handleOpenReconFromWorkspace = (domain: string) => {
+    setReconDomain(domain)
+    setOpenPanel('recon')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleSaveSnapshot = (domain: string, snapshot: ReconSnapshot) => {
+    const ref = workspace.findTargetByDomain(domain)
+    if (!ref) return null
+    return workspace.saveSnapshot(ref.project.id, ref.target.id, snapshot)
+  }
+
+  const handleReconExternalHosts = (domain: string) =>
+    workspace.findTargetByDomain(domain)?.target.externalHosts ?? []
+
+  const handleAddHostsToTarget = (domain: string, hosts: string[]) => {
+    const ref = workspace.findTargetByDomain(domain)
+    if (ref) workspace.importExternalHosts(ref.project.id, ref.target.id, hosts.join('\n'))
+  }
+
+  const handleSaveSharedToWorkspace = () => {
+    if (!sharedRecon) return
+    const snapshot: ReconSnapshot = {
+      date: sharedRecon.date,
+      subdomains: sharedRecon.subdomains,
+      dns: dnsRecordsToMap(sharedRecon.dns),
+    }
+    const existing = workspace.findTargetByDomain(sharedRecon.domain)
+    if (existing) {
+      workspace.saveSnapshot(existing.project.id, existing.target.id, snapshot)
+    } else {
+      const project =
+        workspace.projects[0] ?? workspace.createProject('Recon compartido') ?? null
+      if (!project) return
+      const target = workspace.addTarget(project.id, sharedRecon.domain)
+      if (!target) return
+      workspace.saveSnapshot(project.id, target.id, snapshot)
+    }
+    setSharedSaved(true)
+  }
+
+  const handleCloseSharedRecon = () => {
+    setSharedRecon(null)
+    setSharedReconError(null)
+    window.history.replaceState(null, '', window.location.pathname + window.location.search)
   }
 
   const handleExportData = () => {
@@ -304,7 +385,10 @@ function App() {
               </button>
               <button
                 type="button"
-                onClick={() => togglePanel('recon')}
+                onClick={() => {
+                  setReconDomain(null)
+                  togglePanel('recon')
+                }}
                 className="btn btn-secondary"
                 aria-expanded={openPanel === 'recon'}
               >
@@ -317,6 +401,22 @@ function App() {
                   />
                 </svg>
                 Recon de objetivo
+              </button>
+              <button
+                type="button"
+                onClick={() => togglePanel('workspace')}
+                className="btn btn-secondary"
+                aria-expanded={openPanel === 'workspace'}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                  />
+                </svg>
+                Workspace
               </button>
               <button
                 type="button"
@@ -357,6 +457,34 @@ function App() {
               </button>
             </div>
 
+            {sharedReconError && (
+              <div className="mx-auto mt-6 max-w-3xl">
+                <div
+                  className="flex items-center justify-between gap-2 rounded-lg border border-[var(--danger-500)] bg-[var(--danger-50)] px-3 py-2 text-sm text-[var(--text-primary)]"
+                  role="alert"
+                >
+                  {sharedReconError}
+                  <button
+                    type="button"
+                    className="shrink-0 text-sm font-medium text-[var(--danger-500)] hover:underline"
+                    onClick={handleCloseSharedRecon}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            )}
+            {sharedRecon && (
+              <div className="mx-auto mt-6 max-w-4xl">
+                <SharedReconView
+                  recon={sharedRecon}
+                  onSaveToWorkspace={handleSaveSharedToWorkspace}
+                  onClose={handleCloseSharedRecon}
+                  saved={sharedSaved}
+                />
+              </div>
+            )}
+
             {openPanel === 'builder' && (
               <div className="mx-auto mt-6 max-w-3xl">
                 <DorkBuilder initialEngine={selectedEngine} onTry={handleTryBuilderQuery} />
@@ -369,7 +497,18 @@ function App() {
             )}
             {openPanel === 'recon' && (
               <div className="mx-auto mt-6 max-w-4xl">
-                <ReconPanel />
+                <ReconPanel
+                  initialDomain={reconDomain ?? undefined}
+                  isWorkspaceTarget={(domain) => workspace.findTargetByDomain(domain) !== null}
+                  onSaveSnapshot={handleSaveSnapshot}
+                  externalHosts={handleReconExternalHosts}
+                  onAddHosts={handleAddHostsToTarget}
+                />
+              </div>
+            )}
+            {openPanel === 'workspace' && (
+              <div className="mx-auto mt-6 max-w-4xl">
+                <Workspace workspace={workspace} onOpenRecon={handleOpenReconFromWorkspace} />
               </div>
             )}
             {openPanel === 'playbooks' && (
