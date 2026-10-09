@@ -1,13 +1,12 @@
-/* Service worker de GoogleDork: cache-first para assets estáticos del propio origen. */
-const CACHE_NAME = 'googledork-v1'
+/* Service worker de GoogleDork.
+   - Navegaciones (HTML): network-first, con fallback a cache si no hay red.
+     Asi un deploy nuevo nunca deja la pagina en blanco por HTML/assets viejos.
+   - Assets hasheados (/assets/): cache-first (son inmutables).
+   - Resto del origen: stale-while-revalidate. */
+const CACHE_NAME = 'googledork-v2'
 const BASE_PATH = new URL(self.registration.scope).pathname
 
-const PRECACHE = [
-  BASE_PATH,
-  `${BASE_PATH}index.html`,
-  `${BASE_PATH}manifest.webmanifest`,
-  `${BASE_PATH}favicon.svg`,
-]
+const PRECACHE = [`${BASE_PATH}manifest.webmanifest`, `${BASE_PATH}favicon.svg`]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -36,10 +35,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   if (url.origin !== self.location.origin) return
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached
-      return fetch(request)
+  // Navegaciones: network-first. Si falla la red, cae al cache.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
           if (response.ok) {
             const copy = response.clone()
@@ -47,14 +46,44 @@ self.addEventListener('fetch', (event) => {
           }
           return response
         })
-        .catch(() => {
-          if (request.mode === 'navigate') {
-            return caches
-              .match(`${BASE_PATH}index.html`)
-              .then((fallback) => fallback ?? caches.match(BASE_PATH))
+        .catch(async () => {
+          const cached = await caches.match(request)
+          return cached ?? (await caches.match(BASE_PATH)) ?? Response.error()
+        }),
+    )
+    return
+  }
+
+  // Assets hasheados (inmutables): cache-first.
+  if (url.pathname.startsWith(`${BASE_PATH}assets/`)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
           }
-          return Response.error()
+          return response
         })
+      }),
+    )
+    return
+  }
+
+  // Resto del origen: stale-while-revalidate.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      const network = fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
+          }
+          return response
+        })
+        .catch(() => cached)
+      return cached ?? network
     }),
   )
 })
